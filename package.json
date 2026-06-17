@@ -1,0 +1,15 @@
+{
+  "name": "backmusic-spicetify",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A music visualizer that runs inside the Spotify desktop client via Spicetify.",
+  "scripts": {
+    "build": "node esbuild.config.mjs",
+    "watch": "node esbuild.config.mjs --watch",
+    "install-local": "npm run build && node scripts/install-local.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}
