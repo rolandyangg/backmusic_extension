@@ -1,0 +1,221 @@
+.cpe-overlay {
+  position: fixed;
+  inset: 0;
+  /* Above the .bm-root full-screen takeover (z-index 5000) — this overlay portals to
+     <body>, so it must out-rank the app root to stay visible while editing. */
+  z-index: 6000;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  padding: 1rem;
+}
+
+.cpe {
+  width: 420px;
+  max-width: 100%;
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: rgba(20, 20, 28, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+.cpe__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.cpe__header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.cpe__close {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.cpe__stage {
+  position: relative;
+  height: 280px;
+  border-radius: 12px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: #000;
+}
+
+/* Checkerboard so transparency is visible after removal. */
+.cpe__stage--alpha {
+  background-color: #2a2a32;
+  background-image: linear-gradient(45deg, #3a3a44 25%, transparent 25%),
+    linear-gradient(-45deg, #3a3a44 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #3a3a44 75%),
+    linear-gradient(-45deg, transparent 75%, #3a3a44 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+}
+
+/* Wrapper sizes exactly to the displayed image so marquee % maps to image pixels. */
+.cpe__selwrap {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+  max-height: 100%;
+  line-height: 0;
+}
+
+.cpe__selwrap--active {
+  cursor: crosshair;
+  touch-action: none; /* let pointer drags work on touch devices */
+}
+
+.cpe__stage img {
+  max-width: 100%;
+  max-height: 280px;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Freehand lasso overlay: dims outside the drawn loop and highlights inside. */
+.cpe__lasso {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.cpe__lasso-mask {
+  fill: rgba(0, 0, 0, 0.55);
+}
+
+.cpe__lasso-shape {
+  fill: rgba(124, 92, 255, 0.18);
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.cpe__loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0 2rem;
+  background: rgba(0, 0, 0, 0.55);
+  font-size: 0.95rem;
+}
+
+.cpe__loading-label {
+  font-variant-numeric: tabular-nums;
+}
+
+.cpe__bar {
+  width: 100%;
+  max-width: 240px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+.cpe__bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7c5cff, #b14dff);
+  transition: width 0.12s linear;
+}
+
+.cpe__error {
+  margin: 0.75rem 0 0;
+  font-size: 0.8rem;
+  color: #ff8f8f;
+}
+
+.cpe__actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.cpe__btn {
+  flex: 1;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-radius: 10px;
+  padding: 0.65rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.cpe__btn:disabled {
+  opacity: 0.5;
+}
+
+.cpe__btn--magic {
+  background: linear-gradient(135deg, #7c5cff, #b14dff);
+  border-color: transparent;
+}
+
+.cpe__btn--use {
+  background: #1db954;
+  border-color: transparent;
+  color: #06210f;
+}
+
+/* Refine sliders */
+.cpe__sliders {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cpe__slider {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr 3rem;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.cpe__slider input[type='range'] {
+  width: 100%;
+  accent-color: #b14dff;
+}
+
+.cpe__slider-val {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.cpe__hint {
+  margin: 0.85rem 0 0;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.4);
+  line-height: 1.4;
+}
+
+.cpe__hint--tip {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+}
