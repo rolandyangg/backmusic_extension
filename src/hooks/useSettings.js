@@ -86,5 +86,13 @@ export function useSettings() {
     setSettings({ ...DEFAULT_SETTINGS });
   }, []);
 
-  return { settings, setSetting, resetSettings };
+  // Apply a full settings object at once (used by presets); unknown/missing keys fall back
+  // to defaults so older presets stay valid as new settings are added.
+  const applySettings = useCallback((obj) => {
+    const next = { ...DEFAULT_SETTINGS, ...(obj || {}) };
+    persist(next);
+    setSettings(next);
+  }, []);
+
+  return { settings, setSetting, resetSettings, applySettings };
 }

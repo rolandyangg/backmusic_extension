@@ -18,5 +18,15 @@ export function useImages() {
 
   const clearImage = useCallback((kind) => setImage(kind, null), [setImage]);
 
-  return { images, setImage, clearImage };
+  // Replace both images at once (used by presets) — applies the preset's images, clearing
+  // any not present so applying a preset fully restores its look.
+  const applyImages = useCallback((next) => {
+    const clean = {};
+    if (next?.background) clean.background = next.background;
+    if (next?.centerpiece) clean.centerpiece = next.centerpiece;
+    persistImages(clean);
+    setImages(clean);
+  }, []);
+
+  return { images, setImage, clearImage, applyImages };
 }

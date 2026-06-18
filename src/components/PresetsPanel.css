@@ -1,0 +1,140 @@
+.presets {
+  position: absolute;
+  top: 4rem;
+  right: 1.25rem;
+  z-index: 55;
+  width: 300px;
+  max-width: calc(100vw - 2.5rem);
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 1rem 1.1rem 1.1rem;
+  border-radius: 16px;
+  background: rgba(18, 18, 26, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  color: #fff;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* Embedded mode: clear Spotify's top bar (matches the uploader offset). */
+.bm-root--embed .presets {
+  top: 7rem;
+}
+
+.presets__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.presets__header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.presets__close {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.presets__save {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.presets__input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.presets__input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.presets__btn {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.presets__btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.presets__error {
+  color: #ff8a8a;
+  font-size: 0.78rem;
+  margin: 0.5rem 0 0;
+}
+
+.presets__empty {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.82rem;
+  margin: 0.75rem 0 0;
+}
+
+.presets__list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.presets__item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.presets__name {
+  flex: 1;
+  text-align: left;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.presets__name:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.presets__del {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.35rem;
+}
+
+.presets__del:hover {
+  color: #ff8a8a;
+}

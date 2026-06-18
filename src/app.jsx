@@ -3,8 +3,10 @@ import { createPortal } from 'react-dom';
 import { useSpicetifyNowPlaying } from './useSpicetifyNowPlaying.js';
 import { useImages } from './hooks/useImages.js';
 import { useSettings } from './hooks/useSettings.js';
+import { usePresets } from './hooks/usePresets.js';
 import Visualizer from './components/Visualizer.jsx';
 import ImageUploader from './components/ImageUploader.jsx';
+import PresetsPanel from './components/PresetsPanel.jsx';
 import PlaybackBar from './components/PlaybackBar.jsx';
 import './styles/app.css';
 
@@ -28,9 +30,11 @@ function ensureFonts() {
 // has already been declared").
 export default function App() {
   const nowPlaying = useSpicetifyNowPlaying();
-  const { images, setImage, clearImage } = useImages();
-  const { settings, setSetting, resetSettings } = useSettings();
+  const { images, setImage, clearImage, applyImages } = useImages();
+  const { settings, setSetting, resetSettings, applySettings } = useSettings();
+  const { presets, savePreset, deletePreset } = usePresets();
   const [showUploader, setShowUploader] = useState(false);
+  const [showPresets, setShowPresets] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [active, setActive] = useState(true);
 
@@ -67,7 +71,7 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, [fullscreen]);
 
-  const controlsVisible = active || showUploader;
+  const controlsVisible = active || showUploader || showPresets;
 
   const root = (
     <div className={`bm-root ${fullscreen ? 'bm-root--fs' : 'bm-root--embed'}`}>
@@ -88,7 +92,22 @@ export default function App() {
           >
             {fullscreen ? 'Exit fullscreen' : 'Fullscreen'}
           </button>
-          <button className="controls__btn" onClick={() => setShowUploader((v) => !v)}>
+          <button
+            className="controls__btn"
+            onClick={() => {
+              setShowPresets((v) => !v);
+              setShowUploader(false);
+            }}
+          >
+            Presets
+          </button>
+          <button
+            className="controls__btn"
+            onClick={() => {
+              setShowUploader((v) => !v);
+              setShowPresets(false);
+            }}
+          >
             Customize
           </button>
         </div>
@@ -100,6 +119,19 @@ export default function App() {
         <div className={`playbar-zone ${controlsVisible ? 'is-visible' : ''}`}>
           <PlaybackBar nowPlaying={nowPlaying} />
         </div>
+      )}
+
+      {showPresets && (
+        <PresetsPanel
+          presets={presets}
+          settings={settings}
+          images={images}
+          savePreset={savePreset}
+          deletePreset={deletePreset}
+          applySettings={applySettings}
+          applyImages={applyImages}
+          onClose={() => setShowPresets(false)}
+        />
       )}
 
       {showUploader && (
