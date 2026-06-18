@@ -35,6 +35,7 @@ export default function SoundWaves({
   style = 'rings',
   barSpread = 0.72,
   barWidth = 0.58,
+  barGap = 0.42,
   colorMode = 'auto',
   color = '#8a7cff',
   saturation = 1,
@@ -53,6 +54,8 @@ export default function SoundWaves({
   barSpreadRef.current = barSpread;
   const barWidthRef = useRef(barWidth);
   barWidthRef.current = barWidth;
+  const barGapRef = useRef(barGap);
+  barGapRef.current = barGap;
   const colorModeRef = useRef(colorMode);
   colorModeRef.current = colorMode;
   const colorRef = useRef(color);
@@ -170,16 +173,22 @@ export default function SoundWaves({
     }
 
     // --- Bars (mirrored spectrum) --------------------------------------------
+    // Bar thickness and spacing are explicit (as fractions of a reference slot), and the bar
+    // COUNT is derived to fill the span — so thinner bars just pack more in, staying full.
+    const REF_SLOT = 0.0225; // ≈ default 72% span / 32 bars, as a fraction of canvas width
+    const MAX_BARS = 160;
     function drawBars(w, h, base, scale, sizeMul, opacityMul, glowMul) {
-      const N = 32;
       const spanW = w * barSpreadRef.current;
-      const x0 = (w - spanW) / 2;
-      const slot = spanW / N;
-      const bw = slot * barWidthRef.current;
+      const bw = Math.max(1, barWidthRef.current * REF_SLOT * w); // bar thickness
+      const gap = Math.max(0, barGapRef.current * REF_SLOT * w); // spacing between bars
+      const pitch = bw + gap;
+      const N = Math.max(3, Math.min(MAX_BARS, Math.floor(spanW / pitch)));
+      const used = N * pitch - gap;
+      const x0 = (w - used) / 2;
       const baseY = h * 0.72;
       const half = (N - 1) / 2;
       for (let j = 0; j < N; j++) {
-        const d = Math.abs(j - half) / half; // 0 at center .. 1 at edges
+        const d = half > 0 ? Math.abs(j - half) / half : 0; // 0 at center .. 1 at edges
         // Mirror the 12 bands outward from the center for a symmetric spectrum.
         const bp = d * 11;
         const i0 = Math.floor(bp);
@@ -188,7 +197,7 @@ export default function SoundWaves({
         const env = 1 - d * 0.45; // gentle bell so the middle reads taller
         const v = amp * env * (0.4 + 1.3 * bandVal) + 0.12 * amp * beatPulse;
         const hgt = base * sizeMul * (0.015 + 0.42 * Math.min(v, 1.6));
-        const x = x0 + j * slot + (slot - bw) / 2;
+        const x = x0 + j * pitch;
         const { hue, satStroke, satShadow } = tone((j / N) * 120, j);
         ctx.shadowBlur = Math.min(scale * (4 + amp * 7) * glowMul, scale * 8);
         ctx.shadowColor = `hsla(${hue}, ${satShadow}%, 62%, 0.7)`;

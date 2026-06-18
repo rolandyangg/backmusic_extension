@@ -10,7 +10,8 @@ import { useCallback, useState } from 'react';
 //   tintStrength       : how strongly the tint is overlaid (0..1)
 //   waveStyle          : 'rings' | 'bars' (mirrored spectrum) | 'both'
 //   barSpread          : bars style — fraction of width the spectrum spans (0..1)
-//   barWidth           : bars style — fraction of each slot a bar fills, i.e. thickness (0..1)
+//   barWidth           : bars style — bar thickness (count auto-fills the span to stay packed)
+//   barGap             : bars style — spacing between bars
 //   waveColorMode      : 'classic' (rainbow) | 'album' (album-art palette) |
 //                        'centerpiece' (centerpiece palette) | 'auto' (song's dominant pitch) | 'solid'
 //   waveColor          : color used when waveColorMode is 'solid'
@@ -41,6 +42,7 @@ export const DEFAULT_SETTINGS = {
   waveStyle: 'rings',
   barSpread: 0.72,
   barWidth: 0.58,
+  barGap: 0.42,
   waveColorMode: 'classic',
   waveColor: '#8a7cff',
   waveSaturation: 1,

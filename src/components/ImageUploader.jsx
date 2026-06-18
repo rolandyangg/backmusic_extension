@@ -25,7 +25,8 @@ const WAVE_STYLES = [
 // Bars-only controls (shown when the 'bars' or 'both' style is active).
 const BAR_SLIDERS = [
   { key: 'barSpread', label: 'Bar spread', min: 0.3, max: 1, step: 0.02, fmt: pct },
-  { key: 'barWidth', label: 'Bar thickness', min: 0.15, max: 1, step: 0.02, fmt: pct },
+  { key: 'barWidth', label: 'Bar thickness', min: 0.15, max: 1.5, step: 0.02, fmt: pct },
+  { key: 'barGap', label: 'Bar spacing', min: 0, max: 1.5, step: 0.02, fmt: pct },
 ];
 
 const WAVE_COLOR_MODES = [

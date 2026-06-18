@@ -45,6 +45,7 @@ export default function Visualizer({ nowPlaying, backgroundUrl, centerpieceUrl, 
         style={settings.waveStyle}
         barSpread={settings.barSpread}
         barWidth={settings.barWidth}
+        barGap={settings.barGap}
         colorMode={settings.waveColorMode}
         color={settings.waveColor}
         saturation={settings.waveSaturation}
