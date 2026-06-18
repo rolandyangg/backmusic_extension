@@ -10,7 +10,7 @@ import './Visualizer.css';
 // Until the user uploads their own images we fall back to the current track's album
 // art (blurred for the background, floating for the centerpiece), so it never looks empty.
 export default function Visualizer({ nowPlaying, backgroundUrl, centerpieceUrl, settings }) {
-  const { getPulse } = useBeat(nowPlaying);
+  const { getPulse } = useBeat(nowPlaying, { audioReactive: settings.audioReactive });
   const albumArt = nowPlaying.track?.albumArtUrl || null;
 
   const bg = backgroundUrl || albumArt;

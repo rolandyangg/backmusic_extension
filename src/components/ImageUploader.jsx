@@ -136,7 +136,19 @@ export default function ImageUploader({
         </>
       )}
 
-      {tab === 'Waves' && <div className="uploader__sliders">{sliders}</div>}
+      {tab === 'Waves' && (
+        <div className="uploader__sliders">
+          <label className="uploader__check-row">
+            <span className="uploader__slider-label">React to song audio</span>
+            <input
+              type="checkbox"
+              checked={settings.audioReactive}
+              onChange={(e) => setSetting('audioReactive', e.target.checked)}
+            />
+          </label>
+          {sliders}
+        </div>
+      )}
 
       {tab === 'Background' && (
         <>

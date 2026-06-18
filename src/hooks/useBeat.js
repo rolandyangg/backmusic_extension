@@ -1,22 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getTempo } from '../lib/tempoClient.js';
+import { fetchAnalysis, sampleLoudness, sampleBands, beatIndexAt } from '../lib/audioData.js';
 
-// Turns now-playing data into an animation drive signal. Exposes getPulse(), which
-// the canvas calls every frame, so the engine never triggers per-frame re-renders.
+// Turns now-playing data into an animation drive signal. Exposes getPulse(), which the
+// canvas calls every frame, so the engine never triggers per-frame re-renders.
 //
 // Two modes:
-//   - 'beat'       : BPM known → pulse spikes on each beat, phase-aligned to
-//                    Spotify's reported playback position (interpolated between polls).
-//   - 'decorative' : BPM unknown → smooth breathing pulse.
+//   - 'audio'      : Spotify's audio analysis is available → wave amplitude tracks the
+//                    song's real loudness envelope, `bands` carries its 12 pitch classes,
+//                    and `beat` fires on real beat onsets — all synced to the interpolated
+//                    playback position.
+//   - 'decorative' : no analysis (podcast/local/unavailable) or audio-reactive disabled →
+//                    smooth breathing pulse.
 //
-// getPulse() returns { value: 0..1, beatPhase: 0..1, isPlaying, mode }.
-export function useBeat(nowPlaying) {
+// getPulse() returns { value: 0..1, bands?: number[12], beat?: bool, beatPhase, isPlaying, mode }.
+export function useBeat(nowPlaying, { audioReactive = true } = {}) {
   const ref = useRef({
-    bpm: null,
-    energy: null,
+    analysis: null,
     anchorMs: 0,
     anchorAt: 0,
     isPlaying: false,
+    lastBeat: -1,
   });
   const [mode, setMode] = useState('decorative');
 
@@ -27,26 +30,25 @@ export function useBeat(nowPlaying) {
     ref.current.isPlaying = !!nowPlaying.isPlaying;
   }, [nowPlaying.progressMs, nowPlaying.fetchedAt, nowPlaying.isPlaying]);
 
-  // Look up tempo whenever the track changes.
-  const trackId = nowPlaying.track?.id;
+  // Fetch the track's audio analysis whenever the track changes.
+  const trackUri = nowPlaying.track?.uri;
   useEffect(() => {
-    if (!trackId) {
-      ref.current.bpm = null;
-      ref.current.energy = null;
+    ref.current.analysis = null;
+    ref.current.lastBeat = -1;
+    if (!trackUri) {
       setMode('decorative');
       return;
     }
     let active = true;
-    getTempo(trackId).then((t) => {
+    fetchAnalysis(trackUri).then((a) => {
       if (!active) return;
-      ref.current.bpm = t.bpm;
-      ref.current.energy = t.energy;
-      setMode(t.bpm ? 'beat' : 'decorative');
+      ref.current.analysis = a;
+      setMode(a ? 'audio' : 'decorative');
     });
     return () => {
       active = false;
     };
-  }, [trackId]);
+  }, [trackUri]);
 
   const getPulse = useCallback(() => {
     const s = ref.current;
@@ -54,13 +56,13 @@ export function useBeat(nowPlaying) {
     // Interpolate playback position forward from the last poll while playing.
     const positionMs = s.anchorMs + (s.isPlaying ? now - s.anchorAt : 0);
 
-    if (s.bpm) {
-      const beatPeriod = 60000 / s.bpm;
-      const phase = (positionMs % beatPeriod) / beatPeriod; // 0..1 within the beat
-      // Sharp attack on the beat, smooth decay until the next one.
-      const envelope = Math.pow(1 - phase, 2.2);
-      const intensity = 0.6 + 0.4 * (s.energy ?? 0.5);
-      return { value: envelope * intensity, beatPhase: phase, isPlaying: s.isPlaying, mode: 'beat' };
+    if (audioReactive && s.analysis) {
+      const value = sampleLoudness(s.analysis, positionMs);
+      const bands = sampleBands(s.analysis, positionMs);
+      const bi = beatIndexAt(s.analysis, positionMs);
+      const beat = bi >= 0 && bi !== s.lastBeat;
+      if (beat) s.lastBeat = bi;
+      return { value, bands, beat, beatPhase: 0, isPlaying: s.isPlaying, mode: 'audio' };
     }
 
     // Decorative: gentle breathing independent of any beat.
@@ -71,7 +73,7 @@ export function useBeat(nowPlaying) {
       isPlaying: s.isPlaying,
       mode: 'decorative',
     };
-  }, []);
+  }, [audioReactive]);
 
   return { getPulse, mode };
 }

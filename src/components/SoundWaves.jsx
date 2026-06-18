@@ -26,6 +26,7 @@ export default function SoundWaves({ getPulse, sizeMul = 1, opacityMul = 1, glow
     let amp = 0; // smoothed amplitude
     let lastPhase = 1;
     let ripples = [];
+    const bands = new Array(12).fill(0); // smoothed pitch-class bands (audio mode)
 
     function resize() {
       canvas.width = canvas.clientWidth * dpr();
@@ -50,8 +51,16 @@ export default function SoundWaves({ getPulse, sizeMul = 1, opacityMul = 1, glow
       const target = p.isPlaying ? p.value : 0;
       amp += (target - amp) * 0.12;
 
-      // Emit a ripple at each beat onset (phase wrap-around) while actively beating.
-      if (p.mode === 'beat' && p.isPlaying && p.beatPhase < lastPhase - 0.3) {
+      // Smooth the 12 pitch-class bands toward the current segment (decay to 0 when there's
+      // no analysis), so the ring outline tracks the song's frequency content fluidly.
+      const srcBands = p.bands;
+      for (let b = 0; b < 12; b++) {
+        const tb = srcBands && p.isPlaying ? srcBands[b] : 0;
+        bands[b] += (tb - bands[b]) * 0.18;
+      }
+
+      // Emit a ripple on each real beat onset; fall back to beat-phase wrap (decorative).
+      if (p.isPlaying && (p.beat || (p.mode === 'beat' && p.beatPhase < lastPhase - 0.3))) {
         ripples.push({ r: base * 0.17 * sizeRef.current, life: 1 });
       }
       lastPhase = p.beatPhase;
@@ -71,9 +80,17 @@ export default function SoundWaves({ getPulse, sizeMul = 1, opacityMul = 1, glow
         ctx.beginPath();
         for (let a = 0; a <= segs; a++) {
           const ang = (a / segs) * Math.PI * 2;
+          // Frequency-reactive lobe: interpolate between adjacent pitch-class bands so the
+          // outline bulges where the current segment has energy (smooth, no 12-gon stepping).
+          const fb = (ang / (Math.PI * 2)) * 12;
+          const i0 = Math.floor(fb) % 12;
+          const i1 = (i0 + 1) % 12;
+          const frac = fb - Math.floor(fb);
+          const bandPert = (bands[i0] * (1 - frac) + bands[i1] * frac) * base * 0.045 * sizeMul;
           const pert =
             Math.sin(ang * (3 + i) + t * (1.2 + i * 0.3)) * wobble +
-            Math.sin(ang * (5 + i) - t * 0.8) * wobble * 0.5;
+            Math.sin(ang * (5 + i) - t * 0.8) * wobble * 0.5 +
+            bandPert;
           const r = ringR + pert + amp * base * 0.04 * sizeMul * Math.sin(ang * 2 + t);
           const x = cx + Math.cos(ang) * r;
           const y = cy + Math.sin(ang) * r;

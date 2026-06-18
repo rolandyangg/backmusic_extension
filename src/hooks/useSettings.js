@@ -11,6 +11,7 @@ import { useCallback, useState } from 'react';
 //   waveScale          : multiplier on wave radius
 //   waveOpacity        : multiplier on wave opacity
 //   waveGlow           : multiplier on wave glow (shadow blur)
+//   audioReactive      : drive waves from the song's real audio analysis (else decorative)
 //   labelFont          : font family for the now-playing label
 //   labelSize          : font scale for the now-playing label
 //   labelColor         : text color for the now-playing label
@@ -33,6 +34,7 @@ export const DEFAULT_SETTINGS = {
   waveScale: 1,
   waveOpacity: 1,
   waveGlow: 1,
+  audioReactive: true,
   labelFont: 'Montserrat',
   labelSize: 1,
   labelColor: '#ffffff',

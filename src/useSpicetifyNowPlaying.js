@@ -73,6 +73,7 @@ function readSnapshot() {
     isPlaying: !!isPlaying,
     track: {
       id,
+      uri: item.uri || null,
       name,
       artist: firstArtist(item) || '',
       albumArtUrl: albumArt(item),
