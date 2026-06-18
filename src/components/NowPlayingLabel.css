@@ -6,7 +6,8 @@
   display: flex;
   align-items: flex-end;
   gap: 0.75rem;
-  max-width: min(70vw, 480px);
+  /* Use nearly the full bottom width so long titles/artists aren't truncated. */
+  max-width: calc(100vw - 4rem);
   color: var(--label-fg);
   text-shadow: var(--label-shadow);
   pointer-events: none;
@@ -30,17 +31,16 @@
   font-size: 1.5em;
   font-weight: 700;
   letter-spacing: -0.01em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* No truncation — long titles wrap across the bottom instead of ending in "…". */
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .np__artist {
   font-size: 1em;
   opacity: 0.85;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 /* Equalizer bars — sized in em so they scale with the label's font size. */

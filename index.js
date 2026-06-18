@@ -1298,7 +1298,88 @@ var backmusic = (() => {
     if (document.getElementById("bm-css-NowPlayingLabel.css")) return;
     const el = document.createElement("style");
     el.id = "bm-css-NowPlayingLabel.css";
-    el.textContent = ".np {\n  position: absolute;\n  left: 2rem;\n  bottom: 2rem;\n  z-index: 30;\n  display: flex;\n  align-items: flex-end;\n  gap: 0.75rem;\n  max-width: min(70vw, 480px);\n  color: var(--label-fg);\n  text-shadow: var(--label-shadow);\n  pointer-events: none;\n}\n\n.np--empty {\n  position: absolute;\n  left: 2rem;\n  bottom: 2rem;\n  z-index: 30;\n  color: rgba(255, 255, 255, 0.6);\n  text-shadow: var(--label-shadow);\n  font-size: 0.95rem;\n}\n\n.np__text {\n  min-width: 0;\n}\n\n.np__title {\n  font-size: 1.5em;\n  font-weight: 700;\n  letter-spacing: -0.01em;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n.np__artist {\n  font-size: 1em;\n  opacity: 0.85;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n/* Equalizer bars \u2014 sized in em so they scale with the label's font size. */\n.np__eq {\n  display: flex;\n  align-items: flex-end;\n  gap: 0.2em;\n  height: 1.5em;\n  padding-bottom: 0.25em;\n}\n\n.np__eq span {\n  width: 0.2em;\n  height: 30%;\n  background: currentColor;\n  border-radius: 0.12em;\n}\n\n.np__eq[data-playing='true'] span {\n  animation: np-eq 0.9s ease-in-out infinite;\n}\n\n.np__eq span:nth-child(2) {\n  animation-delay: 0.3s;\n}\n.np__eq span:nth-child(3) {\n  animation-delay: 0.6s;\n}\n\n@keyframes np-eq {\n  0%,\n  100% {\n    height: 25%;\n  }\n  50% {\n    height: 100%;\n  }\n}\n";
+    el.textContent = `.np {
+  position: absolute;
+  left: 2rem;
+  bottom: 2rem;
+  z-index: 30;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  /* Use nearly the full bottom width so long titles/artists aren't truncated. */
+  max-width: calc(100vw - 4rem);
+  color: var(--label-fg);
+  text-shadow: var(--label-shadow);
+  pointer-events: none;
+}
+
+.np--empty {
+  position: absolute;
+  left: 2rem;
+  bottom: 2rem;
+  z-index: 30;
+  color: rgba(255, 255, 255, 0.6);
+  text-shadow: var(--label-shadow);
+  font-size: 0.95rem;
+}
+
+.np__text {
+  min-width: 0;
+}
+
+.np__title {
+  font-size: 1.5em;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  /* No truncation \u2014 long titles wrap across the bottom instead of ending in "\u2026". */
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.np__artist {
+  font-size: 1em;
+  opacity: 0.85;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Equalizer bars \u2014 sized in em so they scale with the label's font size. */
+.np__eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.2em;
+  height: 1.5em;
+  padding-bottom: 0.25em;
+}
+
+.np__eq span {
+  width: 0.2em;
+  height: 30%;
+  background: currentColor;
+  border-radius: 0.12em;
+}
+
+.np__eq[data-playing='true'] span {
+  animation: np-eq 0.9s ease-in-out infinite;
+}
+
+.np__eq span:nth-child(2) {
+  animation-delay: 0.3s;
+}
+.np__eq span:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes np-eq {
+  0%,
+  100% {
+    height: 25%;
+  }
+  50% {
+    height: 100%;
+  }
+}
+`;
     document.head.appendChild(el);
   })();
 
