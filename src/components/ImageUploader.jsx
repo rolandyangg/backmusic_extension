@@ -23,6 +23,7 @@ const WAVE_STYLES = [
 ];
 
 const WAVE_COLOR_MODES = [
+  { value: 'album', label: 'From album cover' },
   { value: 'auto', label: 'Adapt to song' },
   { value: 'solid', label: 'Single color' },
   { value: 'mono', label: 'Black & white' },

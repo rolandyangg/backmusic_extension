@@ -1,4 +1,5 @@
 import { useBeat } from '../hooks/useBeat.js';
+import { useAlbumColors } from '../hooks/useAlbumColors.js';
 import SoundWaves from './SoundWaves.jsx';
 import Particles from './Particles.jsx';
 import NowPlayingLabel from './NowPlayingLabel.jsx';
@@ -11,6 +12,7 @@ import './Visualizer.css';
 // art (blurred for the background, floating for the centerpiece), so it never looks empty.
 export default function Visualizer({ nowPlaying, backgroundUrl, centerpieceUrl, settings }) {
   const { getPulse } = useBeat(nowPlaying, { audioReactive: settings.audioReactive });
+  const albumColors = useAlbumColors(nowPlaying.track?.uri);
   const albumArt = nowPlaying.track?.albumArtUrl || null;
 
   const bg = backgroundUrl || albumArt;
@@ -39,6 +41,7 @@ export default function Visualizer({ nowPlaying, backgroundUrl, centerpieceUrl, 
         style={settings.waveStyle}
         colorMode={settings.waveColorMode}
         color={settings.waveColor}
+        albumColors={albumColors}
         sizeMul={settings.waveScale}
         opacityMul={settings.waveOpacity}
         glowMul={settings.waveGlow}

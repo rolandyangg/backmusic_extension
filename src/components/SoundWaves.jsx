@@ -35,6 +35,7 @@ export default function SoundWaves({
   style = 'rings',
   colorMode = 'auto',
   color = '#8a7cff',
+  albumColors = null,
   sizeMul = 1,
   opacityMul = 1,
   glowMul = 1,
@@ -49,6 +50,8 @@ export default function SoundWaves({
   colorModeRef.current = colorMode;
   const colorRef = useRef(color);
   colorRef.current = color;
+  const albumRef = useRef(albumColors);
+  albumRef.current = albumColors;
   const sizeRef = useRef(sizeMul);
   sizeRef.current = sizeMul;
   const opacityRef = useRef(opacityMul);
@@ -81,11 +84,16 @@ export default function SoundWaves({
     // Hue + saturation for a wave element, given the current color mode. `offset` shifts the
     // hue across elements in 'auto' mode (ignored otherwise); lightness/alpha stay with the
     // renderer. Returns { hue, satStroke, satShadow }.
-    let pal = { mode: 'auto', hueBase: 0, solidH: 270, solidS: 70 };
-    function tone(offset) {
+    let pal = { mode: 'auto', hueBase: 0, solidH: 270, solidS: 70, album: null };
+    function tone(offset, idx) {
       if (pal.mode === 'mono') return { hue: 0, satStroke: 0, satShadow: 0 };
       if (pal.mode === 'solid') {
         return { hue: pal.solidH, satStroke: pal.solidS, satShadow: Math.min(pal.solidS + 10, 100) };
+      }
+      // Cycle album-art swatches across elements; fall back to auto if none extracted.
+      if (pal.mode === 'album' && pal.album && pal.album.length) {
+        const c = pal.album[((idx % pal.album.length) + pal.album.length) % pal.album.length];
+        return { hue: c.h, satStroke: c.s, satShadow: Math.min(c.s + 10, 100) };
       }
       return { hue: (pal.hueBase + offset) % 360, satStroke: 75, satShadow: 85 };
     }
@@ -119,7 +127,7 @@ export default function SoundWaves({
           a === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
         }
         ctx.closePath();
-        const { hue, satStroke, satShadow } = tone(i * 28);
+        const { hue, satStroke, satShadow } = tone(i * 28, i);
         ctx.shadowBlur = scale * (6 + amp * 14) * glowMul;
         ctx.shadowColor = `hsla(${hue}, ${satShadow}%, 62%, 0.7)`;
         ctx.strokeStyle = `hsla(${hue}, ${satStroke}%, 68%, ${(0.19 + amp * 0.33) * opacityMul})`;
@@ -133,7 +141,7 @@ export default function SoundWaves({
         ring.life -= 0.018;
         ctx.beginPath();
         ctx.arc(cx, cy, ring.r, 0, Math.PI * 2);
-        const { hue, satStroke, satShadow } = tone(0);
+        const { hue, satStroke, satShadow } = tone(0, 0);
         ctx.shadowBlur = scale * 9 * glowMul;
         ctx.shadowColor = `hsla(${hue}, ${satShadow}%, 65%, 0.7)`;
         ctx.strokeStyle = `hsla(${hue}, ${satStroke}%, 75%, ${ring.life * 0.32 * opacityMul})`;
@@ -162,7 +170,7 @@ export default function SoundWaves({
         const v = amp * env * (0.4 + 1.3 * bandVal) + 0.12 * amp * beatPulse;
         const hgt = base * sizeMul * (0.015 + 0.42 * Math.min(v, 1.6));
         const x = x0 + j * slot + (slot - bw) / 2;
-        const { hue, satStroke, satShadow } = tone((j / N) * 120);
+        const { hue, satStroke, satShadow } = tone((j / N) * 120, j);
         ctx.shadowBlur = scale * (5 + amp * 12) * glowMul;
         ctx.shadowColor = `hsla(${hue}, ${satShadow}%, 62%, 0.7)`;
         ctx.fillStyle = `hsla(${hue}, ${satStroke}%, 66%, ${(0.3 + amp * 0.4) * opacityMul})`;
@@ -216,7 +224,11 @@ export default function SoundWaves({
       // Resolve the palette for this frame.
       const mode = colorModeRef.current;
       const { h: solidH, s: solidS } = hexToHS(colorRef.current);
-      pal = { mode, hueBase: (t * 6 + domHue * 0.7) % 360, solidH, solidS };
+      const album =
+        mode === 'album' && Array.isArray(albumRef.current)
+          ? albumRef.current.map(hexToHS)
+          : null;
+      pal = { mode, hueBase: (t * 6 + domHue * 0.7) % 360, solidH, solidS, album };
 
       const styleNow = styleRef.current;
       const sizeMul = sizeRef.current;
