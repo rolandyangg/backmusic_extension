@@ -1,16 +1,27 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { loadImages, persistImages } from '../lib/imageStore.js';
 
-// Manages the user's chosen background/centerpiece data URLs, persisted to localStorage.
-// images: { background?: dataUrl, centerpiece?: dataUrl }
+// Manages the user's chosen background/centerpiece data URLs, persisted to IndexedDB.
+// images: { background?: dataUrl, centerpiece?: dataUrl }. Loads asynchronously on mount
+// (brief album-art fallback until ready).
 export function useImages() {
-  const [images, setImages] = useState(loadImages);
+  const [images, setImages] = useState({});
+
+  useEffect(() => {
+    let alive = true;
+    loadImages().then((v) => {
+      if (alive) setImages(v);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const setImage = useCallback((kind, dataUrl) => {
     setImages((prev) => {
       const next = { ...prev, [kind]: dataUrl };
       if (!dataUrl) delete next[kind];
-      // Persist; if storage fails (quota), the value still lives in memory this session.
+      // Persist; failures (quota) keep the in-memory value for this session.
       persistImages(next);
       return next;
     });

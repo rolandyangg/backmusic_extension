@@ -1,21 +1,36 @@
-// Persists the user's background + centerpiece images in localStorage as data URLs.
-// Images are downscaled/compressed first so they comfortably fit the ~5MB quota.
+// Persists the user's background + centerpiece images (data URLs) in IndexedDB, which has a
+// far larger quota than localStorage's ~5MB cap. One-time migrates any old localStorage value.
+import { idbGet, idbSet } from './idb.js';
+
 const KEY = 'bm_images_v1';
 
-export function loadImages() {
+// Async: returns { background?, centerpiece? }. Migrates a pre-existing localStorage copy once.
+export async function loadImages() {
   try {
-    return JSON.parse(localStorage.getItem(KEY)) || {};
+    const v = await idbGet(KEY);
+    if (v != null) return v;
   } catch {
-    return {};
+    // fall through to localStorage / empty
   }
+  try {
+    const ls = JSON.parse(localStorage.getItem(KEY));
+    if (ls && typeof ls === 'object') {
+      idbSet(KEY, ls).catch(() => {});
+      localStorage.removeItem(KEY);
+      return ls;
+    }
+  } catch {
+    // ignore
+  }
+  return {};
 }
 
-export function persistImages(images) {
+// Async: returns true on success, false on failure (e.g. quota exceeded).
+export async function persistImages(images) {
   try {
-    localStorage.setItem(KEY, JSON.stringify(images));
+    await idbSet(KEY, images);
     return true;
   } catch {
-    // Most likely QuotaExceededError.
     return false;
   }
 }

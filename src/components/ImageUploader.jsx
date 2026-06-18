@@ -95,10 +95,11 @@ export default function ImageUploader({
   const [editingFile, setEditingFile] = useState(null);
   const [tab, setTab] = useState('Centerpiece');
 
-  function applyImage(kind, dataUrl) {
+  async function applyImage(kind, dataUrl) {
     setImage(kind, dataUrl);
     // setImage persists internally; re-check to surface a quota failure.
-    setError(persistImages({ ...images, [kind]: dataUrl }) ? null : 'Image too large to save — it will reset on reload. Try a smaller file.');
+    const ok = await persistImages({ ...images, [kind]: dataUrl });
+    setError(ok ? null : 'Image too large to save — it will reset on reload. Try a smaller file.');
   }
 
   async function handleBackground(file) {

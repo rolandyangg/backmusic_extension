@@ -1,33 +1,46 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { idbGet, idbSet } from '../lib/idb.js';
 
-// Named look presets, persisted to localStorage. Each preset stores the full settings object
-// and the uploaded images: { id, name, settings, images }. Applying is done by the caller via
-// useSettings.applySettings + useImages.applyImages.
+// Named look presets, persisted to IndexedDB (large quota — they embed images). Each preset:
+// { id, name, settings, images }. Applying is done by the caller via useSettings.applySettings
+// + useImages.applyImages. One-time migrates any old localStorage value.
 const KEY = 'bm_presets_v1';
 
-function load() {
+async function load() {
   try {
-    const v = JSON.parse(localStorage.getItem(KEY));
-    return Array.isArray(v) ? v : [];
+    const v = await idbGet(KEY);
+    if (Array.isArray(v)) return v;
   } catch {
-    return [];
+    // fall through
   }
-}
-
-// Returns true on success, false if persistence fails (e.g. quota exceeded — images are large).
-function persist(list) {
   try {
-    localStorage.setItem(KEY, JSON.stringify(list));
-    return true;
+    const ls = JSON.parse(localStorage.getItem(KEY));
+    if (Array.isArray(ls)) {
+      idbSet(KEY, ls).catch(() => {});
+      localStorage.removeItem(KEY);
+      return ls;
+    }
   } catch {
-    return false;
+    // ignore
   }
+  return [];
 }
 
 export function usePresets() {
-  const [presets, setPresets] = useState(load);
+  const [presets, setPresets] = useState([]);
 
-  const savePreset = useCallback((name, settings, images) => {
+  useEffect(() => {
+    let alive = true;
+    load().then((v) => {
+      if (alive) setPresets(v);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // Returns true on success, false if persistence fails (e.g. quota exceeded).
+  const savePreset = useCallback(async (name, settings, images) => {
     const clean = (name || '').trim() || 'Preset';
     const preset = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -35,16 +48,20 @@ export function usePresets() {
       settings,
       images: images || {},
     };
-    // Replace any existing preset with the same name.
-    const next = [...load().filter((p) => p.name !== clean), preset];
-    if (!persist(next)) return false; // quota — prior presets remain intact
+    const current = await load();
+    const next = [...current.filter((p) => p.name !== clean), preset]; // replace same name
+    try {
+      await idbSet(KEY, next);
+    } catch {
+      return false; // quota — prior presets remain intact
+    }
     setPresets(next);
     return true;
   }, []);
 
-  const deletePreset = useCallback((id) => {
-    const next = load().filter((p) => p.id !== id);
-    persist(next);
+  const deletePreset = useCallback(async (id) => {
+    const next = (await load()).filter((p) => p.id !== id);
+    idbSet(KEY, next).catch(() => {});
     setPresets(next);
   }, []);
 
