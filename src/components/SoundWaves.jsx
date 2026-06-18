@@ -62,7 +62,14 @@ export default function SoundWaves({
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    const dpr = () => Math.min(window.devicePixelRatio || 1, 2);
+    // Cap the backing-store resolution. Fullscreen at DPR 2 is millions of pixels, and the
+    // glow (shadowBlur) cost scales with pixel area — the dominant source of fullscreen lag.
+    const MAX_DIM = 1920;
+    const dpr = () => {
+      const baseDpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      const longest = Math.max(canvas.clientWidth, canvas.clientHeight) || 1;
+      return longest * baseDpr > MAX_DIM ? Math.max(0.75, MAX_DIM / longest) : baseDpr;
+    };
 
     let raf = 0;
     let running = true;
@@ -74,8 +81,8 @@ export default function SoundWaves({
     const bands = new Array(12).fill(0); // smoothed pitch-class bands (audio mode)
 
     function resize() {
-      canvas.width = canvas.clientWidth * dpr();
-      canvas.height = canvas.clientHeight * dpr();
+      canvas.width = Math.round(canvas.clientWidth * dpr());
+      canvas.height = Math.round(canvas.clientHeight * dpr());
     }
     resize();
     const ro = new ResizeObserver(resize);
@@ -128,7 +135,7 @@ export default function SoundWaves({
         }
         ctx.closePath();
         const { hue, satStroke, satShadow } = tone(i * 28, i);
-        ctx.shadowBlur = scale * (6 + amp * 14) * glowMul;
+        ctx.shadowBlur = Math.min(scale * (4 + amp * 8) * glowMul, scale * 8);
         ctx.shadowColor = `hsla(${hue}, ${satShadow}%, 62%, 0.7)`;
         ctx.strokeStyle = `hsla(${hue}, ${satStroke}%, 68%, ${(0.19 + amp * 0.33) * opacityMul})`;
         ctx.lineWidth = scale * (2 + i * 0.7);
@@ -142,7 +149,7 @@ export default function SoundWaves({
         ctx.beginPath();
         ctx.arc(cx, cy, ring.r, 0, Math.PI * 2);
         const { hue, satStroke, satShadow } = tone(0, 0);
-        ctx.shadowBlur = scale * 9 * glowMul;
+        ctx.shadowBlur = Math.min(scale * 6 * glowMul, scale * 8);
         ctx.shadowColor = `hsla(${hue}, ${satShadow}%, 65%, 0.7)`;
         ctx.strokeStyle = `hsla(${hue}, ${satStroke}%, 75%, ${ring.life * 0.32 * opacityMul})`;
         ctx.lineWidth = scale * 2.5;
@@ -171,7 +178,7 @@ export default function SoundWaves({
         const hgt = base * sizeMul * (0.015 + 0.42 * Math.min(v, 1.6));
         const x = x0 + j * slot + (slot - bw) / 2;
         const { hue, satStroke, satShadow } = tone((j / N) * 120, j);
-        ctx.shadowBlur = scale * (5 + amp * 12) * glowMul;
+        ctx.shadowBlur = Math.min(scale * (4 + amp * 7) * glowMul, scale * 8);
         ctx.shadowColor = `hsla(${hue}, ${satShadow}%, 62%, 0.7)`;
         ctx.fillStyle = `hsla(${hue}, ${satStroke}%, 66%, ${(0.3 + amp * 0.4) * opacityMul})`;
         const r = Math.min(bw / 2, scale * 4);
@@ -194,6 +201,15 @@ export default function SoundWaves({
       // Collapse amplitude toward 0 when paused, ease toward the pulse otherwise.
       const target = p.isPlaying ? p.value : 0;
       amp += (target - amp) * 0.12;
+
+      // Idle gate: when paused and faded out, just clear and skip the heavy draw (the loop
+      // keeps running so it resumes instantly). Saves the bulk of CPU/GPU while paused.
+      if (!p.isPlaying && amp < 0.012) {
+        if (ripples.length) ripples = [];
+        ctx.clearRect(0, 0, w, h);
+        raf = requestAnimationFrame(frame);
+        return;
+      }
 
       // Smooth the 12 pitch-class bands toward the current segment (decay to 0 when there's
       // no analysis), so both styles track the song's frequency content fluidly.

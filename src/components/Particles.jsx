@@ -125,13 +125,7 @@ const EFFECTS = {
     },
     draw(ctx, p, rgb, e) {
       const a = (0.25 + 0.75 * (0.5 + 0.5 * Math.sin(p.tp))) * e.opacity;
-      ctx.shadowBlur = 6 * e.size;
-      ctx.shadowColor = `rgba(${rgb.r},${rgb.g},${rgb.b},${a})`;
-      ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${a})`;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r * e.size, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
+      glowDot(ctx, p.x, p.y, Math.max(p.r * e.size * 2.4, 1.6), rgb, a);
     },
   },
 
@@ -160,13 +154,7 @@ const EFFECTS = {
     draw(ctx, p, rgb, e) {
       const a = (0.15 + 0.85 * (0.5 + 0.5 * Math.sin(p.bp))) * e.opacity;
       const r = p.r * e.size * e.boost;
-      ctx.shadowBlur = 12 * e.size;
-      ctx.shadowColor = `rgba(${rgb.r},${rgb.g},${rgb.b},${a})`;
-      ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${a})`;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
+      glowDot(ctx, p.x, p.y, r * 2.8, rgb, a);
     },
   },
 
@@ -222,16 +210,22 @@ const EFFECTS = {
     draw(ctx, p, rgb, e) {
       const a = (0.4 + 0.6 * (0.5 + 0.5 * Math.sin(p.fp))) * e.opacity;
       const r = p.r * e.size * e.boost;
-      ctx.shadowBlur = 10 * e.size;
-      ctx.shadowColor = `rgba(${rgb.r},${rgb.g},${rgb.b},${a})`;
-      ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${a})`;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
+      glowDot(ctx, p.x, p.y, r * 2.4, rgb, a);
     },
   },
 };
+
+// Soft glowing dot via a radial gradient — much cheaper than ctx.shadowBlur per particle.
+function glowDot(ctx, x, y, r, rgb, a) {
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, `rgba(${rgb.r},${rgb.g},${rgb.b},${a})`);
+  g.addColorStop(0.4, `rgba(${rgb.r},${rgb.g},${rgb.b},${a * 0.55})`);
+  g.addColorStop(1, `rgba(${rgb.r},${rgb.g},${rgb.b},0)`);
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+}
 
 // Wrap a particle around the canvas edges (for drifting effects).
 function wrap(p, e) {
@@ -250,7 +244,13 @@ export default function Particles({ getPulse, type, density = 1, speed = 1, size
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    const dpr = () => Math.min(window.devicePixelRatio || 1, 2);
+    // Cap backing-store resolution (see SoundWaves) so fullscreen doesn't balloon pixel count.
+    const MAX_DIM = 1920;
+    const dpr = () => {
+      const baseDpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      const longest = Math.max(canvas.clientWidth, canvas.clientHeight) || 1;
+      return longest * baseDpr > MAX_DIM ? Math.max(0.75, MAX_DIM / longest) : baseDpr;
+    };
 
     let raf = 0;
     let running = true;
@@ -260,8 +260,8 @@ export default function Particles({ getPulse, type, density = 1, speed = 1, size
     let lastTime = performance.now();
 
     function resize() {
-      canvas.width = canvas.clientWidth * dpr();
-      canvas.height = canvas.clientHeight * dpr();
+      canvas.width = Math.round(canvas.clientWidth * dpr());
+      canvas.height = Math.round(canvas.clientHeight * dpr());
     }
     resize();
     const ro = new ResizeObserver(resize);

@@ -42,7 +42,8 @@ export default function App() {
   useEffect(() => {
     let timer;
     const wake = () => {
-      setActive(true);
+      // Only re-render on the false→true edge; mousemove fires ~60x/s while already visible.
+      setActive((a) => (a ? a : true));
       clearTimeout(timer);
       timer = setTimeout(() => setActive(false), 1000);
     };

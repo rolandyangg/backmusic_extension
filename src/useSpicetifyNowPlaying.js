@@ -93,14 +93,27 @@ export function useSpicetifyNowPlaying() {
 
     const update = () => setState(readSnapshot());
 
-    // songchange: track/metadata changed. onprogress: position ticked.
-    // onplaypause: play/pause toggled. All re-read the live snapshot.
-    const events = ['songchange', 'onprogress', 'onplaypause'];
-    events.forEach((e) => P.addEventListener?.(e, update));
+    // onprogress fires ~4x/s; each setState re-renders the whole tree. The beat clock and
+    // seek bar interpolate position locally from progressMs/fetchedAt, so we only need a
+    // fresh anchor ~once/sec — throttle it. songchange/onplaypause stay immediate.
+    let lastProgress = 0;
+    const onProgress = () => {
+      const now = Date.now();
+      if (now - lastProgress >= 900) {
+        lastProgress = now;
+        update();
+      }
+    };
+
+    P.addEventListener?.('songchange', update);
+    P.addEventListener?.('onplaypause', update);
+    P.addEventListener?.('onprogress', onProgress);
     update(); // prime immediately
 
     return () => {
-      events.forEach((e) => P.removeEventListener?.(e, update));
+      P.removeEventListener?.('songchange', update);
+      P.removeEventListener?.('onplaypause', update);
+      P.removeEventListener?.('onprogress', onProgress);
     };
   }, []);
 
