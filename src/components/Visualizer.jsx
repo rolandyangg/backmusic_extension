@@ -67,8 +67,8 @@ export default function Visualizer({ nowPlaying, backgroundUrl, centerpieceUrl, 
         <div
           className="viz__center-wrap"
           style={{
-            '--cp-size': `${settings.centerpiece}vmin`,
-            transform: `translateY(${settings.centerpieceY}vh)`,
+            '--cp-size': `${settings.centerpiece}cqmin`,
+            transform: `translateY(${settings.centerpieceY}cqh)`,
             opacity: settings.centerpieceOpacity,
           }}
         >
