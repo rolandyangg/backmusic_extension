@@ -37,6 +37,8 @@ export default function Visualizer({ nowPlaying, backgroundUrl, centerpieceUrl, 
       <SoundWaves
         getPulse={getPulse}
         style={settings.waveStyle}
+        colorMode={settings.waveColorMode}
+        color={settings.waveColor}
         sizeMul={settings.waveScale}
         opacityMul={settings.waveOpacity}
         glowMul={settings.waveGlow}

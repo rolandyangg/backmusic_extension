@@ -19,6 +19,13 @@ const TABS = ['Centerpiece', 'Waves', 'Background', 'Effects'];
 const WAVE_STYLES = [
   { value: 'rings', label: 'Rings' },
   { value: 'bars', label: 'Bars (spectrum)' },
+  { value: 'both', label: 'Both' },
+];
+
+const WAVE_COLOR_MODES = [
+  { value: 'auto', label: 'Adapt to song' },
+  { value: 'solid', label: 'Single color' },
+  { value: 'mono', label: 'Black & white' },
 ];
 
 // Free Google Fonts loaded in index.html (Montserrat ≈ Spotify's Circular).
@@ -157,6 +164,30 @@ export default function ImageUploader({
               ))}
             </select>
           </label>
+          <label className="uploader__color-row">
+            <span className="uploader__slider-label">Wave color</span>
+            <select
+              className="uploader__select"
+              value={settings.waveColorMode}
+              onChange={(e) => setSetting('waveColorMode', e.target.value)}
+            >
+              {WAVE_COLOR_MODES.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          {settings.waveColorMode === 'solid' && (
+            <label className="uploader__color-row">
+              <span className="uploader__slider-label">Color</span>
+              <input
+                type="color"
+                value={settings.waveColor}
+                onChange={(e) => setSetting('waveColor', e.target.value)}
+              />
+            </label>
+          )}
           <label className="uploader__check-row">
             <span className="uploader__slider-label">React to song audio</span>
             <input
