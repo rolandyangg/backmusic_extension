@@ -50,7 +50,8 @@ export default function Visualizer({ nowPlaying, backgroundUrl, centerpieceUrl, 
         color={settings.waveColor}
         saturation={settings.waveSaturation}
         paletteColors={paletteColors}
-        sizeMul={settings.waveScale}
+        ringSize={settings.ringSize}
+        barHeight={settings.barHeight}
         opacityMul={settings.waveOpacity}
         glowMul={settings.waveGlow}
       />

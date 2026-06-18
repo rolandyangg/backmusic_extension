@@ -40,7 +40,8 @@ export default function SoundWaves({
   color = '#8a7cff',
   saturation = 1,
   paletteColors = null,
-  sizeMul = 1,
+  ringSize = 1,
+  barHeight = 1,
   opacityMul = 1,
   glowMul = 1,
 }) {
@@ -64,8 +65,10 @@ export default function SoundWaves({
   satRef.current = saturation;
   const paletteRef = useRef(paletteColors);
   paletteRef.current = paletteColors;
-  const sizeRef = useRef(sizeMul);
-  sizeRef.current = sizeMul;
+  const ringSizeRef = useRef(ringSize);
+  ringSizeRef.current = ringSize;
+  const barHeightRef = useRef(barHeight);
+  barHeightRef.current = barHeight;
   const opacityRef = useRef(opacityMul);
   opacityRef.current = opacityMul;
   const glowRef = useRef(glowMul);
@@ -289,16 +292,17 @@ export default function SoundWaves({
       pal = { mode, hueBase, solidH, solidS, sat, palette };
 
       const styleNow = styleRef.current;
-      const sizeMul = sizeRef.current;
+      const ringSizeNow = ringSizeRef.current;
+      const barHeightNow = barHeightRef.current;
       const opacityMul = opacityRef.current;
       const glowMul = glowRef.current;
 
       if (styleNow === 'bars' || styleNow === 'both') {
-        drawBars(w, h, base, scale, sizeMul, opacityMul, glowMul);
+        drawBars(w, h, base, scale, barHeightNow, opacityMul, glowMul);
       }
       if (styleNow === 'rings' || styleNow === 'both') {
-        if (beatNow) ripples.push({ r: base * 0.17 * sizeMul, life: 1 });
-        drawRings(w, h, base, t, scale, sizeMul, opacityMul, glowMul);
+        if (beatNow) ripples.push({ r: base * 0.17 * ringSizeNow, life: 1 });
+        drawRings(w, h, base, t, scale, ringSizeNow, opacityMul, glowMul);
       }
 
       ctx.shadowBlur = 0;

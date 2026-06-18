@@ -16,7 +16,8 @@ import { useCallback, useState } from 'react';
 //                        'centerpiece' (centerpiece palette) | 'auto' (song's dominant pitch) | 'solid'
 //   waveColor          : color used when waveColorMode is 'solid'
 //   waveSaturation     : 0..1 — scales wave color saturation (0 = black & white, 1 = full color)
-//   waveScale          : multiplier on wave radius
+//   ringSize           : rings style — multiplier on ring radius
+//   barHeight          : bars style — multiplier on bar height
 //   waveOpacity        : multiplier on wave opacity
 //   waveGlow           : multiplier on wave glow (shadow blur)
 //   audioReactive      : drive waves from the song's real audio analysis (else decorative)
@@ -46,7 +47,8 @@ export const DEFAULT_SETTINGS = {
   waveColorMode: 'classic',
   waveColor: '#8a7cff',
   waveSaturation: 1,
-  waveScale: 1,
+  ringSize: 1,
+  barHeight: 1,
   waveOpacity: 1,
   waveGlow: 1,
   audioReactive: true,
@@ -62,6 +64,23 @@ export const DEFAULT_SETTINGS = {
   particleBeat: false,
 };
 
+// Bring an older raw settings object (from storage or a saved preset) up to date, in place,
+// before it's merged over DEFAULT_SETTINGS.
+function migrate(s) {
+  // Old single 'waveScale' → separate ringSize / barHeight.
+  if (s.waveScale != null) {
+    if (s.ringSize == null) s.ringSize = s.waveScale;
+    if (s.barHeight == null) s.barHeight = s.waveScale;
+    delete s.waveScale;
+  }
+  // Old 'mono' color mode → saturation slider at 0 (black & white).
+  if (s.waveColorMode === 'mono') {
+    s.waveColorMode = 'classic';
+    if (s.waveSaturation == null) s.waveSaturation = 0;
+  }
+  return s;
+}
+
 function load() {
   let stored = {};
   try {
@@ -69,13 +88,7 @@ function load() {
   } catch {
     stored = {};
   }
-  const s = { ...DEFAULT_SETTINGS, ...stored };
-  // Migrate the old 'mono' color mode to the saturation slider at 0 (black & white).
-  if (s.waveColorMode === 'mono') {
-    s.waveColorMode = 'classic';
-    s.waveSaturation = 0;
-  }
-  return s;
+  return { ...DEFAULT_SETTINGS, ...migrate(stored) };
 }
 
 function persist(settings) {
@@ -105,7 +118,7 @@ export function useSettings() {
   // Apply a full settings object at once (used by presets); unknown/missing keys fall back
   // to defaults so older presets stay valid as new settings are added.
   const applySettings = useCallback((obj) => {
-    const next = { ...DEFAULT_SETTINGS, ...(obj || {}) };
+    const next = { ...DEFAULT_SETTINGS, ...migrate({ ...(obj || {}) }) };
     persist(next);
     setSettings(next);
   }, []);

@@ -22,8 +22,14 @@ const WAVE_STYLES = [
   { value: 'both', label: 'Both' },
 ];
 
+// Rings-only controls (shown when the 'rings' or 'both' style is active).
+const RING_SLIDERS = [
+  { key: 'ringSize', label: 'Ring size', min: 0.4, max: 2.5, step: 0.05, fmt: mult },
+];
+
 // Bars-only controls (shown when the 'bars' or 'both' style is active).
 const BAR_SLIDERS = [
+  { key: 'barHeight', label: 'Bar height', min: 0.2, max: 3, step: 0.05, fmt: mult },
   { key: 'barSpread', label: 'Bar spread', min: 0.3, max: 1, step: 0.02, fmt: pct },
   { key: 'barWidth', label: 'Bar thickness', min: 0.15, max: 1.5, step: 0.02, fmt: pct },
   { key: 'barGap', label: 'Bar spacing', min: 0, max: 1.5, step: 0.02, fmt: pct },
@@ -59,7 +65,6 @@ const SLIDERS = {
   ],
   Waves: [
     { key: 'waveSaturation', label: 'Color saturation', min: 0, max: 1, step: 0.05, fmt: pct },
-    { key: 'waveScale', label: 'Wave size', min: 0.4, max: 2.5, step: 0.05, fmt: mult },
     { key: 'waveOpacity', label: 'Wave opacity', min: 0, max: 1.6, step: 0.05, fmt: mult },
     { key: 'waveGlow', label: 'Wave glow', min: 0, max: 3, step: 0.05, fmt: mult },
   ],
@@ -105,7 +110,7 @@ export default function ImageUploader({
     }
   }
 
-  const sliders = SLIDERS[tab].map((s) => (
+  const renderSlider = (s) => (
     <label key={s.key} className="uploader__slider">
       <span className="uploader__slider-label">{s.label}</span>
       <input
@@ -118,7 +123,10 @@ export default function ImageUploader({
       />
       <span className="uploader__slider-val">{s.fmt(settings[s.key])}</span>
     </label>
-  ));
+  );
+  const sliders = SLIDERS[tab].map(renderSlider);
+  const showRings = settings.waveStyle === 'rings' || settings.waveStyle === 'both';
+  const showBars = settings.waveStyle === 'bars' || settings.waveStyle === 'both';
 
   return (
     <div className="uploader">
@@ -207,21 +215,8 @@ export default function ImageUploader({
             />
           </label>
           {sliders}
-          {(settings.waveStyle === 'bars' || settings.waveStyle === 'both') &&
-            BAR_SLIDERS.map((s) => (
-              <label key={s.key} className="uploader__slider">
-                <span className="uploader__slider-label">{s.label}</span>
-                <input
-                  type="range"
-                  min={s.min}
-                  max={s.max}
-                  step={s.step}
-                  value={settings[s.key]}
-                  onChange={(e) => setSetting(s.key, Number(e.target.value))}
-                />
-                <span className="uploader__slider-val">{s.fmt(settings[s.key])}</span>
-              </label>
-            ))}
+          {showRings && RING_SLIDERS.map(renderSlider)}
+          {showBars && BAR_SLIDERS.map(renderSlider)}
         </div>
       )}
 
