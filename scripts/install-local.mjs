@@ -37,7 +37,7 @@ const dest = path.join(customApps, APP);
 mkdirSync(dest, { recursive: true });
 
 cpSync(path.join(repo, 'manifest.json'), path.join(dest, 'manifest.json'));
-cpSync(path.join(repo, 'dist', 'index.js'), path.join(dest, 'index.js'));
+cpSync(path.join(repo, 'index.js'), path.join(dest, 'index.js'));
 console.log(`Copied app → ${dest}`);
 
 try {

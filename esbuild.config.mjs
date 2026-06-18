@@ -36,7 +36,9 @@ const cssInject = {
 const options = {
   entryPoints: [path.join(__dirname, 'src/app.jsx')],
   bundle: true,
-  outfile: path.join(__dirname, 'dist/index.js'),
+  // Output to the repo root so the root is a ready-to-use Spicetify app folder (manifest.json
+  // + index.js side by side) — the layout the Marketplace and a manual install expect.
+  outfile: path.join(__dirname, 'index.js'),
   // Spicetify loads a custom app's index.js as a CLASSIC SCRIPT (not a module), then
   // calls a top-level global `render()`. So we emit an IIFE on a global (`backmusic`) and
   // append `const render = () => backmusic.default()` — mirroring the marketplace app.
