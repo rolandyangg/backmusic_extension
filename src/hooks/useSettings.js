@@ -9,8 +9,8 @@ import { useCallback, useState } from 'react';
 //   tintColor          : color of the overlay tint
 //   tintStrength       : how strongly the tint is overlaid (0..1)
 //   waveStyle          : 'rings' | 'bars' (mirrored spectrum) | 'both'
-//   waveColorMode      : 'classic' (smooth time-cycling rainbow) | 'album' (album-art colors) |
-//                        'auto' (base hue follows the song's dominant pitch) | 'solid'
+//   waveColorMode      : 'classic' (rainbow) | 'album' (album-art palette) |
+//                        'centerpiece' (centerpiece palette) | 'auto' (song's dominant pitch) | 'solid'
 //   waveColor          : color used when waveColorMode is 'solid'
 //   waveSaturation     : 0..1 — scales wave color saturation (0 = black & white, 1 = full color)
 //   waveScale          : multiplier on wave radius

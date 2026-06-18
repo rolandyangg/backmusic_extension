@@ -1,5 +1,5 @@
 import { useBeat } from '../hooks/useBeat.js';
-import { useAlbumColors } from '../hooks/useAlbumColors.js';
+import { useWavePalette } from '../hooks/useWavePalette.js';
 import SoundWaves from './SoundWaves.jsx';
 import Particles from './Particles.jsx';
 import NowPlayingLabel from './NowPlayingLabel.jsx';
@@ -12,11 +12,15 @@ import './Visualizer.css';
 // art (blurred for the background, floating for the centerpiece), so it never looks empty.
 export default function Visualizer({ nowPlaying, backgroundUrl, centerpieceUrl, settings }) {
   const { getPulse } = useBeat(nowPlaying, { audioReactive: settings.audioReactive });
-  const albumColors = useAlbumColors(nowPlaying.track?.uri);
   const albumArt = nowPlaying.track?.albumArtUrl || null;
 
   const bg = backgroundUrl || albumArt;
   const center = centerpieceUrl || albumArt;
+
+  // Palette for the image-based wave color modes: sample the album art or the centerpiece
+  // (whichever the mode selects), falling back to the album for the other modes.
+  const paletteSrc = settings.waveColorMode === 'centerpiece' ? center : albumArt;
+  const paletteColors = useWavePalette(settings.waveColorMode, paletteSrc, nowPlaying.track?.uri);
 
   // Blur applies to a user-set background; the album-art fallback keeps its own
   // ambient blur (from CSS). Scale up a touch so blurred edges don't show gaps.
@@ -42,7 +46,7 @@ export default function Visualizer({ nowPlaying, backgroundUrl, centerpieceUrl, 
         colorMode={settings.waveColorMode}
         color={settings.waveColor}
         saturation={settings.waveSaturation}
-        albumColors={albumColors}
+        paletteColors={paletteColors}
         sizeMul={settings.waveScale}
         opacityMul={settings.waveOpacity}
         glowMul={settings.waveGlow}

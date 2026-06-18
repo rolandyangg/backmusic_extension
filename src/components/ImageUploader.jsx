@@ -25,6 +25,7 @@ const WAVE_STYLES = [
 const WAVE_COLOR_MODES = [
   { value: 'classic', label: 'Rainbow (classic)' },
   { value: 'album', label: 'From album cover' },
+  { value: 'centerpiece', label: 'From centerpiece' },
   { value: 'auto', label: 'Adapt to song' },
   { value: 'solid', label: 'Single color' },
 ];
