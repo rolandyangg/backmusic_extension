@@ -24,7 +24,7 @@ jobs:
       - name: Package install-ready app folder
         run: |
           mkdir -p pkg/backmusic
-          cp manifest.json index.js preview.png README.md pkg/backmusic/
+          cp manifest.json index.js preview.gif README.md pkg/backmusic/
           (cd pkg && zip -r ../backmusic.zip backmusic)
       - name: Create GitHub release
         env:

@@ -13,7 +13,7 @@ backdrop** you leave running in the background, to a bold, full-on **audio visua
 colors, wave style, particles, centerpiece and background from the in-app **Customize** panel, and
 save your favorite looks as **presets**.
 
-![backmusic preview](preview.png)
+![backmusic preview](preview.gif)
 
 > ⚠️ **Unofficial.** backmusic runs via [Spicetify](https://spicetify.app), which modifies the
 > Spotify desktop client and **may be against Spotify's Terms of Service**. Desktop-only. A Spotify
