@@ -97,7 +97,7 @@ export default function App() {
           the same mouse-move trigger as the top controls and slides up from the bottom. */}
       {fullscreen && (
         <div className={`playbar-zone ${controlsVisible ? 'is-visible' : ''}`}>
-          <PlaybackBar isPlaying={nowPlaying.isPlaying} />
+          <PlaybackBar nowPlaying={nowPlaying} />
         </div>
       )}
 
