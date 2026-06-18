@@ -106,3 +106,65 @@
   background: rgba(0, 0, 0, 0.55);
   border-color: rgba(255, 255, 255, 0.45);
 }
+
+/* Fullscreen transport bar, bottom-center. Mirrors the .controls slide+fade but from the
+   bottom (translateY +12px -> 0) and reveals on the same mouse-active state. */
+.playbar-zone {
+  position: absolute;
+  left: 50%;
+  bottom: 1.75rem;
+  transform: translateX(-50%);
+  z-index: 5050;
+  pointer-events: none;
+}
+
+.playbar {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 999px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.playbar-zone.is-visible .playbar {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.playbar__btn {
+  width: 2.6rem;
+  height: 2.6rem;
+  display: grid;
+  place-items: center;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  transition: background 0.15s ease;
+}
+
+.playbar__btn svg {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.playbar__btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.playbar__btn--main {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.playbar__btn--main:hover {
+  background: rgba(255, 255, 255, 0.28);
+}

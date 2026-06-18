@@ -5,6 +5,7 @@ import { useImages } from './hooks/useImages.js';
 import { useSettings } from './hooks/useSettings.js';
 import Visualizer from './components/Visualizer.jsx';
 import ImageUploader from './components/ImageUploader.jsx';
+import PlaybackBar from './components/PlaybackBar.jsx';
 import './styles/app.css';
 
 const FONTS_HREF =
@@ -91,6 +92,14 @@ export default function App() {
           </button>
         </div>
       </div>
+
+      {/* Transport bar — fullscreen only (embedded mode keeps Spotify's own bar). Reveals on
+          the same mouse-move trigger as the top controls and slides up from the bottom. */}
+      {fullscreen && (
+        <div className={`playbar-zone ${controlsVisible ? 'is-visible' : ''}`}>
+          <PlaybackBar isPlaying={nowPlaying.isPlaying} />
+        </div>
+      )}
 
       {showUploader && (
         <ImageUploader
