@@ -35,6 +35,16 @@ save your favorite looks as **presets**.
   repeat).
 - **Presets** — save and switch between named looks (settings + images).
 
+## Gallery
+
+A few looks — every one is built from the same Customize panel (centerpiece, background, wave
+style, colors, particles):
+
+| | |
+|---|---|
+| ![Spectrum bars colored from the palette](Preview5.png)<br>**Spectrum colored from the art/centerpiece** | ![Your own photo as the centerpiece over a custom background](Preview2.png)<br>**Your photo as the centerpiece** |
+| ![Rings and bars over album art](Preview3.png)<br>**Rings + bars** | ![Any image as the centerpiece](Preview4.png)<br>**Any image as the centerpiece** |
+
 ## Install
 
 Requires the **desktop Spotify app** with **[Spicetify](https://spicetify.app/docs/getting-started)**
