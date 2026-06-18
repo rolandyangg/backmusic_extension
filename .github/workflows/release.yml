@@ -1,0 +1,35 @@
+name: release
+
+# Pushing a v* tag builds the app, zips an install-ready `backmusic/` folder
+# (manifest.json + index.js + preview.png + README.md), and publishes a GitHub
+# Release with the zip attached. (Runs on GitHub's runners, which have gh + token.)
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm run build
+      - name: Package install-ready app folder
+        run: |
+          mkdir -p pkg/backmusic
+          cp manifest.json index.js preview.png README.md pkg/backmusic/
+          (cd pkg && zip -r ../backmusic.zip backmusic)
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" backmusic.zip \
+            --title "backmusic $GITHUB_REF_NAME" \
+            --notes-file .github/RELEASE_NOTES.md
