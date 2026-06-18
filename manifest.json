@@ -4,7 +4,7 @@
   "active-icon": "<svg role='img' width='100%' height='100%' viewBox='0 0 16 16' fill='currentColor'><rect x='2.6' y='4' width='1.8' height='8' rx='0.9'/><rect x='5.6' y='1' width='1.8' height='14' rx='0.9'/><rect x='8.6' y='3' width='1.8' height='10' rx='0.9'/><rect x='11.6' y='1.5' width='1.8' height='13' rx='0.9'/></svg>",
   "subfiles": [],
   "subfiles_extension": [],
-  "description": "A lofi-style music visualizer for your currently playing Spotify song — a customizable background, floating centerpiece, and sound waves + particles, full-screen inside the Spotify desktop client.",
+  "description": "Turn Spotify into an ambient, audio-reactive backdrop. Leave it on for a living view of whatever's playing instead of staring at a static window — or make it your own full-on visualizer. Deeply customizable: sound-wave rings or a spectrum, a floating centerpiece, particles, fullscreen, and saveable presets.",
   "preview": "preview.png",
   "readme": "README.md",
   "authors": [
@@ -13,5 +13,5 @@
       "url": "https://github.com/rolandyangg"
     }
   ],
-  "tags": ["visualizer", "lofi", "now playing", "fullscreen"]
+  "tags": ["visualizer", "backdrop", "ambient", "music", "lofi", "now playing", "fullscreen", "spectrum"]
 }
