@@ -42,8 +42,8 @@ style, colors, particles):
 
 | | |
 |---|---|
-| ![Spectrum bars colored from the palette](Preview5.png)<br>**Spectrum colored from the art/centerpiece** | ![Your own photo as the centerpiece over a custom background](Preview2.png)<br>**Your photo as the centerpiece** |
-| ![Rings and bars over album art](Preview3.png)<br>**Rings + bars** | ![Any image as the centerpiece](Preview4.png)<br>**Any image as the centerpiece** |
+| ![backmusic preview](Preview5.png) | ![backmusic preview](Preview2.png) |
+| ![backmusic preview](Preview3.png) | ![backmusic preview](Preview4.png) |
 
 ## Install
 
