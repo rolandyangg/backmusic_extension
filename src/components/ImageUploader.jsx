@@ -22,6 +22,12 @@ const WAVE_STYLES = [
   { value: 'both', label: 'Both' },
 ];
 
+// Bars-only controls (shown when the 'bars' or 'both' style is active).
+const BAR_SLIDERS = [
+  { key: 'barSpread', label: 'Bar spread', min: 0.3, max: 1, step: 0.02, fmt: pct },
+  { key: 'barWidth', label: 'Bar thickness', min: 0.15, max: 1, step: 0.02, fmt: pct },
+];
+
 const WAVE_COLOR_MODES = [
   { value: 'classic', label: 'Rainbow (classic)' },
   { value: 'album', label: 'From album cover' },
@@ -200,6 +206,21 @@ export default function ImageUploader({
             />
           </label>
           {sliders}
+          {(settings.waveStyle === 'bars' || settings.waveStyle === 'both') &&
+            BAR_SLIDERS.map((s) => (
+              <label key={s.key} className="uploader__slider">
+                <span className="uploader__slider-label">{s.label}</span>
+                <input
+                  type="range"
+                  min={s.min}
+                  max={s.max}
+                  step={s.step}
+                  value={settings[s.key]}
+                  onChange={(e) => setSetting(s.key, Number(e.target.value))}
+                />
+                <span className="uploader__slider-val">{s.fmt(settings[s.key])}</span>
+              </label>
+            ))}
         </div>
       )}
 

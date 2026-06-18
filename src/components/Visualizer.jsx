@@ -43,6 +43,8 @@ export default function Visualizer({ nowPlaying, backgroundUrl, centerpieceUrl, 
       <SoundWaves
         getPulse={getPulse}
         style={settings.waveStyle}
+        barSpread={settings.barSpread}
+        barWidth={settings.barWidth}
         colorMode={settings.waveColorMode}
         color={settings.waveColor}
         saturation={settings.waveSaturation}

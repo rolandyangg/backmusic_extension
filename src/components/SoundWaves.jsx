@@ -33,6 +33,8 @@ function hexToHS(hex) {
 export default function SoundWaves({
   getPulse,
   style = 'rings',
+  barSpread = 0.72,
+  barWidth = 0.58,
   colorMode = 'auto',
   color = '#8a7cff',
   saturation = 1,
@@ -47,6 +49,10 @@ export default function SoundWaves({
   // Mirror live props into refs so the RAF loop reads current values.
   const styleRef = useRef(style);
   styleRef.current = style;
+  const barSpreadRef = useRef(barSpread);
+  barSpreadRef.current = barSpread;
+  const barWidthRef = useRef(barWidth);
+  barWidthRef.current = barWidth;
   const colorModeRef = useRef(colorMode);
   colorModeRef.current = colorMode;
   const colorRef = useRef(color);
@@ -166,10 +172,10 @@ export default function SoundWaves({
     // --- Bars (mirrored spectrum) --------------------------------------------
     function drawBars(w, h, base, scale, sizeMul, opacityMul, glowMul) {
       const N = 32;
-      const spanW = w * 0.72;
+      const spanW = w * barSpreadRef.current;
       const x0 = (w - spanW) / 2;
       const slot = spanW / N;
-      const bw = slot * 0.58;
+      const bw = slot * barWidthRef.current;
       const baseY = h * 0.72;
       const half = (N - 1) / 2;
       for (let j = 0; j < N; j++) {

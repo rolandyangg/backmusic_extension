@@ -9,6 +9,8 @@ import { useCallback, useState } from 'react';
 //   tintColor          : color of the overlay tint
 //   tintStrength       : how strongly the tint is overlaid (0..1)
 //   waveStyle          : 'rings' | 'bars' (mirrored spectrum) | 'both'
+//   barSpread          : bars style — fraction of width the spectrum spans (0..1)
+//   barWidth           : bars style — fraction of each slot a bar fills, i.e. thickness (0..1)
 //   waveColorMode      : 'classic' (rainbow) | 'album' (album-art palette) |
 //                        'centerpiece' (centerpiece palette) | 'auto' (song's dominant pitch) | 'solid'
 //   waveColor          : color used when waveColorMode is 'solid'
@@ -37,6 +39,8 @@ export const DEFAULT_SETTINGS = {
   tintColor: '#000000',
   tintStrength: 0,
   waveStyle: 'rings',
+  barSpread: 0.72,
+  barWidth: 0.58,
   waveColorMode: 'classic',
   waveColor: '#8a7cff',
   waveSaturation: 1,
