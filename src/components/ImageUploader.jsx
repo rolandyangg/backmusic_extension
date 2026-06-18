@@ -27,7 +27,6 @@ const WAVE_COLOR_MODES = [
   { value: 'album', label: 'From album cover' },
   { value: 'auto', label: 'Adapt to song' },
   { value: 'solid', label: 'Single color' },
-  { value: 'mono', label: 'Black & white' },
 ];
 
 // Free Google Fonts loaded in index.html (Montserrat ≈ Spotify's Circular).
@@ -51,6 +50,7 @@ const SLIDERS = {
     { key: 'centerpieceOpacity', label: 'Centerpiece opacity', min: 0, max: 1, step: 0.05, fmt: pct },
   ],
   Waves: [
+    { key: 'waveSaturation', label: 'Color saturation', min: 0, max: 1, step: 0.05, fmt: pct },
     { key: 'waveScale', label: 'Wave size', min: 0.4, max: 2.5, step: 0.05, fmt: mult },
     { key: 'waveOpacity', label: 'Wave opacity', min: 0, max: 1.6, step: 0.05, fmt: mult },
     { key: 'waveGlow', label: 'Wave glow', min: 0, max: 3, step: 0.05, fmt: mult },

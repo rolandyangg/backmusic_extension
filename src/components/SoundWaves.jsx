@@ -35,6 +35,7 @@ export default function SoundWaves({
   style = 'rings',
   colorMode = 'auto',
   color = '#8a7cff',
+  saturation = 1,
   albumColors = null,
   sizeMul = 1,
   opacityMul = 1,
@@ -50,6 +51,8 @@ export default function SoundWaves({
   colorModeRef.current = colorMode;
   const colorRef = useRef(color);
   colorRef.current = color;
+  const satRef = useRef(saturation);
+  satRef.current = saturation;
   const albumRef = useRef(albumColors);
   albumRef.current = albumColors;
   const sizeRef = useRef(sizeMul);
@@ -91,18 +94,20 @@ export default function SoundWaves({
     // Hue + saturation for a wave element, given the current color mode. `offset` shifts the
     // hue across elements in 'auto' mode (ignored otherwise); lightness/alpha stay with the
     // renderer. Returns { hue, satStroke, satShadow }.
-    let pal = { mode: 'auto', hueBase: 0, solidH: 270, solidS: 70, album: null };
+    let pal = { mode: 'auto', hueBase: 0, solidH: 270, solidS: 70, sat: 1, album: null };
     function tone(offset, idx) {
-      if (pal.mode === 'mono') return { hue: 0, satStroke: 0, satShadow: 0 };
+      // Global saturation multiplier (0 = black & white) applied to every mode. Legacy 'mono'
+      // (e.g. from an old preset) forces it to 0.
+      const sat = pal.mode === 'mono' ? 0 : pal.sat;
       if (pal.mode === 'solid') {
-        return { hue: pal.solidH, satStroke: pal.solidS, satShadow: Math.min(pal.solidS + 10, 100) };
+        return { hue: pal.solidH, satStroke: pal.solidS * sat, satShadow: Math.min(pal.solidS + 10, 100) * sat };
       }
       // Cycle album-art swatches across elements; fall back to auto if none extracted.
       if (pal.mode === 'album' && pal.album && pal.album.length) {
         const c = pal.album[((idx % pal.album.length) + pal.album.length) % pal.album.length];
-        return { hue: c.h, satStroke: c.s, satShadow: Math.min(c.s + 10, 100) };
+        return { hue: c.h, satStroke: c.s * sat, satShadow: Math.min(c.s + 10, 100) * sat };
       }
-      return { hue: (pal.hueBase + offset) % 360, satStroke: 75, satShadow: 85 };
+      return { hue: (pal.hueBase + offset) % 360, satStroke: 75 * sat, satShadow: 85 * sat };
     }
 
     // --- Rings ----------------------------------------------------------------
@@ -247,7 +252,8 @@ export default function SoundWaves({
       // 'classic' = the original smooth time-cycling rainbow (no song adaptation); 'auto'
       // drifts the base hue toward the dominant pitch. Both use tone()'s hue-cycling branch.
       const hueBase = mode === 'auto' ? (t * 6 + domHue * 0.7) % 360 : (t * 6) % 360;
-      pal = { mode, hueBase, solidH, solidS, album };
+      const sat = Math.max(0, Math.min(1, satRef.current));
+      pal = { mode, hueBase, solidH, solidS, sat, album };
 
       const styleNow = styleRef.current;
       const sizeMul = sizeRef.current;

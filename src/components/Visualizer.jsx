@@ -41,6 +41,7 @@ export default function Visualizer({ nowPlaying, backgroundUrl, centerpieceUrl, 
         style={settings.waveStyle}
         colorMode={settings.waveColorMode}
         color={settings.waveColor}
+        saturation={settings.waveSaturation}
         albumColors={albumColors}
         sizeMul={settings.waveScale}
         opacityMul={settings.waveOpacity}

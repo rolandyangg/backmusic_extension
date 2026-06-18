@@ -10,8 +10,9 @@ import { useCallback, useState } from 'react';
 //   tintStrength       : how strongly the tint is overlaid (0..1)
 //   waveStyle          : 'rings' | 'bars' (mirrored spectrum) | 'both'
 //   waveColorMode      : 'classic' (smooth time-cycling rainbow) | 'album' (album-art colors) |
-//                        'auto' (base hue follows the song's dominant pitch) | 'solid' | 'mono'
+//                        'auto' (base hue follows the song's dominant pitch) | 'solid'
 //   waveColor          : color used when waveColorMode is 'solid'
+//   waveSaturation     : 0..1 — scales wave color saturation (0 = black & white, 1 = full color)
 //   waveScale          : multiplier on wave radius
 //   waveOpacity        : multiplier on wave opacity
 //   waveGlow           : multiplier on wave glow (shadow blur)
@@ -38,6 +39,7 @@ export const DEFAULT_SETTINGS = {
   waveStyle: 'rings',
   waveColorMode: 'classic',
   waveColor: '#8a7cff',
+  waveSaturation: 1,
   waveScale: 1,
   waveOpacity: 1,
   waveGlow: 1,
@@ -55,11 +57,19 @@ export const DEFAULT_SETTINGS = {
 };
 
 function load() {
+  let stored = {};
   try {
-    return { ...DEFAULT_SETTINGS, ...(JSON.parse(localStorage.getItem(KEY)) || {}) };
+    stored = JSON.parse(localStorage.getItem(KEY)) || {};
   } catch {
-    return { ...DEFAULT_SETTINGS };
+    stored = {};
   }
+  const s = { ...DEFAULT_SETTINGS, ...stored };
+  // Migrate the old 'mono' color mode to the saturation slider at 0 (black & white).
+  if (s.waveColorMode === 'mono') {
+    s.waveColorMode = 'classic';
+    s.waveSaturation = 0;
+  }
+  return s;
 }
 
 function persist(settings) {
