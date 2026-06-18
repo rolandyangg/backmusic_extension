@@ -187,6 +187,12 @@ export default function SoundWaves({
       const x0 = (w - used) / 2;
       const baseY = h * 0.72;
       const half = (N - 1) / 2;
+      const r = Math.min(bw / 2, scale * 4);
+
+      // Build EVERY bar into one path and fill it in a single pass. Previously each bar did
+      // its own shadowBlur'd fill, so dense/zero-gap bars (up to MAX_BARS) meant ~160 glow
+      // passes per frame — the cause of the spacing≈0 lag. One path = one shadow pass.
+      ctx.beginPath();
       for (let j = 0; j < N; j++) {
         const d = half > 0 ? Math.abs(j - half) / half : 0; // 0 at center .. 1 at edges
         // Mirror the 12 bands outward from the center for a symmetric spectrum.
@@ -198,16 +204,27 @@ export default function SoundWaves({
         const v = amp * env * (0.4 + 1.3 * bandVal) + 0.12 * amp * beatPulse;
         const hgt = base * sizeMul * (0.015 + 0.42 * Math.min(v, 1.6));
         const x = x0 + j * pitch;
-        const { hue, satStroke, satShadow } = tone((j / N) * 120, j);
-        ctx.shadowBlur = Math.min(scale * (4 + amp * 7) * glowMul, scale * 8);
-        ctx.shadowColor = `hsla(${hue}, ${satShadow}%, 62%, 0.7)`;
-        ctx.fillStyle = `hsla(${hue}, ${satStroke}%, 66%, ${(0.3 + amp * 0.4) * opacityMul})`;
-        const r = Math.min(bw / 2, scale * 4);
-        ctx.beginPath();
         if (ctx.roundRect) ctx.roundRect(x, baseY - hgt, bw, hgt, r);
         else ctx.rect(x, baseY - hgt, bw, hgt);
-        ctx.fill();
       }
+
+      // Color the spectrum with a horizontal gradient sampled from tone() at a few stops, so
+      // the per-bar coloring is preserved without per-bar fills.
+      const grad = ctx.createLinearGradient(x0, 0, x0 + used, 0);
+      const STOPS = 8;
+      const alpha = (0.3 + amp * 0.4) * opacityMul;
+      for (let s = 0; s <= STOPS; s++) {
+        const frac = s / STOPS;
+        const { hue, satStroke } = tone(frac * 120, Math.round(frac * (N - 1)));
+        grad.addColorStop(frac, `hsla(${hue}, ${satStroke}%, 66%, ${alpha})`);
+      }
+      ctx.fillStyle = grad;
+
+      // One shadow for the whole spectrum (glow tint sampled from the center).
+      const mid = tone(60, Math.round(half));
+      ctx.shadowBlur = Math.min(scale * (4 + amp * 7) * glowMul, scale * 8);
+      ctx.shadowColor = `hsla(${mid.hue}, ${mid.satShadow}%, 62%, 0.7)`;
+      ctx.fill();
     }
 
     function frame() {
