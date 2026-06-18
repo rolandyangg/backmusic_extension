@@ -244,7 +244,10 @@ export default function SoundWaves({
         mode === 'album' && Array.isArray(albumRef.current)
           ? albumRef.current.map(hexToHS)
           : null;
-      pal = { mode, hueBase: (t * 6 + domHue * 0.7) % 360, solidH, solidS, album };
+      // 'classic' = the original smooth time-cycling rainbow (no song adaptation); 'auto'
+      // drifts the base hue toward the dominant pitch. Both use tone()'s hue-cycling branch.
+      const hueBase = mode === 'auto' ? (t * 6 + domHue * 0.7) % 360 : (t * 6) % 360;
+      pal = { mode, hueBase, solidH, solidS, album };
 
       const styleNow = styleRef.current;
       const sizeMul = sizeRef.current;
