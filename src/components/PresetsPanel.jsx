@@ -1,18 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
+import { getUsedBytes, STORAGE_CAP } from '../lib/storage.js';
 import './PresetsPanel.css';
-
-// Best-effort storage usage for the origin (covers IndexedDB, where images/presets live).
-async function getStorageEstimate() {
-  try {
-    const { usage, quota } = await navigator.storage.estimate();
-    if (typeof usage === 'number' && typeof quota === 'number' && quota > 0) {
-      return { usage, quota };
-    }
-  } catch {
-    // unsupported
-  }
-  return null;
-}
 
 function fmtMB(bytes) {
   const mb = bytes / (1024 * 1024);
@@ -34,16 +22,16 @@ export default function PresetsPanel({
 }) {
   const [name, setName] = useState('');
   const [error, setError] = useState(null);
-  const [estimate, setEstimate] = useState(null);
+  const [used, setUsed] = useState(null); // bytes backmusic is using
 
-  const refreshEstimate = useCallback(() => {
-    getStorageEstimate().then(setEstimate);
+  const refreshUsage = useCallback(() => {
+    getUsedBytes().then(setUsed);
   }, []);
 
-  // Estimate on open, and after presets change (save/delete update the list).
+  // Recompute on open and whenever presets change (save/delete update the list).
   useEffect(() => {
-    refreshEstimate();
-  }, [refreshEstimate, presets]);
+    refreshUsage();
+  }, [refreshUsage, presets]);
 
   const save = async () => {
     if (await savePreset(name, settings, images)) {
@@ -52,7 +40,7 @@ export default function PresetsPanel({
     } else {
       setError('Storage full — delete a preset or use smaller images.');
     }
-    refreshEstimate();
+    refreshUsage();
   };
 
   const apply = (p) => {
@@ -60,7 +48,7 @@ export default function PresetsPanel({
     applyImages(p.images || {});
   };
 
-  const pct = estimate ? Math.min(100, (estimate.usage / estimate.quota) * 100) : 0;
+  const pct = used != null ? Math.min(100, (used / STORAGE_CAP) * 100) : 0;
   const barColor = pct > 90 ? '#ff6b6b' : pct > 75 ? '#ffc861' : '#7ad7ff';
 
   return (
@@ -113,12 +101,12 @@ export default function PresetsPanel({
         </ul>
       )}
 
-      {estimate && (
+      {used != null && (
         <div className="presets__storage">
           <div className="presets__storage-row">
             <span>Storage</span>
             <span>
-              {fmtMB(estimate.usage)} of {fmtMB(estimate.quota)} used
+              {fmtMB(used)} of {fmtMB(STORAGE_CAP)} used
             </span>
           </div>
           <div className="presets__storage-bar">

@@ -1,8 +1,8 @@
-// Persists the user's background + centerpiece images (data URLs) in IndexedDB, which has a
-// far larger quota than localStorage's ~5MB cap. One-time migrates any old localStorage value.
+// Persists the user's background + centerpiece images (data URLs) in IndexedDB under a 100 MB
+// app budget (see storage.js), well beyond localStorage's ~5MB cap. Migrates an old localStorage
+// value once.
 import { idbGet, idbSet } from './idb.js';
-
-const KEY = 'bm_images_v1';
+import { IMAGES_KEY as KEY, setCapped } from './storage.js';
 
 // Async: returns { background?, centerpiece? }. Migrates a pre-existing localStorage copy once.
 export async function loadImages() {
@@ -25,14 +25,9 @@ export async function loadImages() {
   return {};
 }
 
-// Async: returns true on success, false on failure (e.g. quota exceeded).
+// Async: returns true on success, false if it would exceed the 100 MB budget (or write fails).
 export async function persistImages(images) {
-  try {
-    await idbSet(KEY, images);
-    return true;
-  } catch {
-    return false;
-  }
+  return setCapped(KEY, images);
 }
 
 // Crops a File to the bounding box of a freeform lasso (`points` are {x,y} in

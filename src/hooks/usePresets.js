@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { idbGet, idbSet } from '../lib/idb.js';
+import { PRESETS_KEY as KEY, setCapped } from '../lib/storage.js';
 
-// Named look presets, persisted to IndexedDB (large quota — they embed images). Each preset:
-// { id, name, settings, images }. Applying is done by the caller via useSettings.applySettings
-// + useImages.applyImages. One-time migrates any old localStorage value.
-const KEY = 'bm_presets_v1';
+// Named look presets, persisted to IndexedDB under the 100 MB app budget (they embed images).
+// Each preset: { id, name, settings, images }. Applying is done by the caller via
+// useSettings.applySettings + useImages.applyImages. One-time migrates any old localStorage value.
 
 async function load() {
   try {
@@ -50,11 +50,7 @@ export function usePresets() {
     };
     const current = await load();
     const next = [...current.filter((p) => p.name !== clean), preset]; // replace same name
-    try {
-      await idbSet(KEY, next);
-    } catch {
-      return false; // quota — prior presets remain intact
-    }
+    if (!(await setCapped(KEY, next))) return false; // over budget — prior presets intact
     setPresets(next);
     return true;
   }, []);
