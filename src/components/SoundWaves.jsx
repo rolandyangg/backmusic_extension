@@ -1,14 +1,25 @@
 import { useEffect, useRef } from 'react';
 
-// Canvas sound-wave animation. Reads the beat engine's getPulse() every frame
-// (so it never re-renders React), draws layered organic rings sized by the pulse,
-// and emits an expanding ripple on each beat. Amplitude eases down when paused;
-// the RAF loop stops entirely when the tab is hidden.
-export default function SoundWaves({ getPulse, sizeMul = 1, opacityMul = 1, glowMul = 1 }) {
+// Canvas sound-wave animation. Reads the beat engine's getPulse() every frame (so it never
+// re-renders React) and draws one of two styles, switchable live via the `style` prop:
+//   - 'rings' : layered organic rings sized by loudness, outline deformed by frequency
+//               (pitch) bands, with an expanding ripple on each beat.
+//   - 'bars'  : a centered, mirrored spectrum of bars rising from a baseline, heights driven
+//               by the frequency bands + loudness, with a brightness/height kick on each beat.
+// Amplitude eases down when paused; the RAF loop stops entirely when the tab is hidden.
+export default function SoundWaves({
+  getPulse,
+  style = 'rings',
+  sizeMul = 1,
+  opacityMul = 1,
+  glowMul = 1,
+}) {
   const canvasRef = useRef(null);
   const getPulseRef = useRef(getPulse);
   getPulseRef.current = getPulse;
   // Mirror live settings into refs so the RAF loop reads current values.
+  const styleRef = useRef(style);
+  styleRef.current = style;
   const sizeRef = useRef(sizeMul);
   sizeRef.current = sizeMul;
   const opacityRef = useRef(opacityMul);
@@ -25,6 +36,7 @@ export default function SoundWaves({ getPulse, sizeMul = 1, opacityMul = 1, glow
     let running = true;
     let amp = 0; // smoothed amplitude
     let lastPhase = 1;
+    let beatPulse = 0; // decaying 0..1, kicked on each beat (used by bars)
     let ripples = [];
     const bands = new Array(12).fill(0); // smoothed pitch-class bands (audio mode)
 
@@ -36,42 +48,10 @@ export default function SoundWaves({ getPulse, sizeMul = 1, opacityMul = 1, glow
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
 
-    function frame() {
-      if (!running) return;
-      const p = getPulseRef.current();
-      const w = canvas.width;
-      const h = canvas.height;
+    // --- Rings ----------------------------------------------------------------
+    function drawRings(w, h, base, t, scale, hueBase, sizeMul, opacityMul, glowMul) {
       const cx = w / 2;
       const cy = h / 2;
-      const base = Math.min(w, h);
-      const t = performance.now() / 1000;
-      const scale = dpr();
-
-      // Collapse amplitude toward 0 when paused, ease toward the pulse otherwise.
-      const target = p.isPlaying ? p.value : 0;
-      amp += (target - amp) * 0.12;
-
-      // Smooth the 12 pitch-class bands toward the current segment (decay to 0 when there's
-      // no analysis), so the ring outline tracks the song's frequency content fluidly.
-      const srcBands = p.bands;
-      for (let b = 0; b < 12; b++) {
-        const tb = srcBands && p.isPlaying ? srcBands[b] : 0;
-        bands[b] += (tb - bands[b]) * 0.18;
-      }
-
-      // Emit a ripple on each real beat onset; fall back to beat-phase wrap (decorative).
-      if (p.isPlaying && (p.beat || (p.mode === 'beat' && p.beatPhase < lastPhase - 0.3))) {
-        ripples.push({ r: base * 0.17 * sizeRef.current, life: 1 });
-      }
-      lastPhase = p.beatPhase;
-
-      ctx.clearRect(0, 0, w, h);
-      ctx.globalCompositeOperation = 'lighter';
-
-      const hueBase = (t * 6) % 360;
-      const sizeMul = sizeRef.current;
-      const opacityMul = opacityRef.current;
-      const glowMul = glowRef.current;
       const RINGS = 4;
       for (let i = 0; i < RINGS; i++) {
         const ringR = base * (0.15 + i * 0.05) * (1 + amp * 0.5) * sizeMul;
@@ -98,7 +78,6 @@ export default function SoundWaves({ getPulse, sizeMul = 1, opacityMul = 1, glow
         }
         ctx.closePath();
         const hue = (hueBase + i * 28) % 360;
-        // A touch of glow helps the lines read against busy/bright backgrounds.
         ctx.shadowBlur = scale * (6 + amp * 14) * glowMul;
         ctx.shadowColor = `hsla(${hue}, 85%, 62%, 0.7)`;
         ctx.strokeStyle = `hsla(${hue}, 75%, 68%, ${(0.19 + amp * 0.33) * opacityMul})`;
@@ -117,6 +96,82 @@ export default function SoundWaves({ getPulse, sizeMul = 1, opacityMul = 1, glow
         ctx.strokeStyle = `hsla(${hueBase}, 78%, 75%, ${ring.life * 0.32 * opacityMul})`;
         ctx.lineWidth = scale * 2.5;
         ctx.stroke();
+      }
+    }
+
+    // --- Bars (mirrored spectrum) --------------------------------------------
+    function drawBars(w, h, base, scale, hueBase, sizeMul, opacityMul, glowMul) {
+      const N = 32;
+      const spanW = w * 0.72;
+      const x0 = (w - spanW) / 2;
+      const slot = spanW / N;
+      const bw = slot * 0.58;
+      const baseY = h * 0.72;
+      const half = (N - 1) / 2;
+      for (let j = 0; j < N; j++) {
+        const d = Math.abs(j - half) / half; // 0 at center .. 1 at edges
+        // Mirror the 12 bands outward from the center for a symmetric spectrum.
+        const bp = d * 11;
+        const i0 = Math.floor(bp);
+        const i1 = Math.min(i0 + 1, 11);
+        const bandVal = bands[i0] * (1 - (bp - i0)) + bands[i1] * (bp - i0);
+        const env = 1 - d * 0.45; // gentle bell so the middle reads taller
+        const v = amp * env * (0.4 + 1.3 * bandVal) + 0.12 * amp * beatPulse;
+        const hgt = base * sizeMul * (0.015 + 0.42 * Math.min(v, 1.6));
+        const x = x0 + j * slot + (slot - bw) / 2;
+        const hue = (hueBase + (j / N) * 120) % 360;
+        ctx.shadowBlur = scale * (5 + amp * 12) * glowMul;
+        ctx.shadowColor = `hsla(${hue}, 85%, 62%, 0.7)`;
+        ctx.fillStyle = `hsla(${hue}, 80%, 66%, ${(0.3 + amp * 0.4) * opacityMul})`;
+        const r = Math.min(bw / 2, scale * 4);
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(x, baseY - hgt, bw, hgt, r);
+        else ctx.rect(x, baseY - hgt, bw, hgt);
+        ctx.fill();
+      }
+    }
+
+    function frame() {
+      if (!running) return;
+      const p = getPulseRef.current();
+      const w = canvas.width;
+      const h = canvas.height;
+      const base = Math.min(w, h);
+      const t = performance.now() / 1000;
+      const scale = dpr();
+
+      // Collapse amplitude toward 0 when paused, ease toward the pulse otherwise.
+      const target = p.isPlaying ? p.value : 0;
+      amp += (target - amp) * 0.12;
+
+      // Smooth the 12 pitch-class bands toward the current segment (decay to 0 when there's
+      // no analysis), so both styles track the song's frequency content fluidly.
+      const srcBands = p.bands;
+      for (let b = 0; b < 12; b++) {
+        const tb = srcBands && p.isPlaying ? srcBands[b] : 0;
+        bands[b] += (tb - bands[b]) * 0.18;
+      }
+
+      // Beat onset: real beats, or beat-phase wrap-around (decorative beat mode).
+      const beatNow =
+        p.isPlaying && (p.beat || (p.mode === 'beat' && p.beatPhase < lastPhase - 0.3));
+      lastPhase = p.beatPhase;
+      beatPulse *= 0.9;
+      if (beatNow) beatPulse = 1;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.globalCompositeOperation = 'lighter';
+
+      const hueBase = (t * 6) % 360;
+      const sizeMul = sizeRef.current;
+      const opacityMul = opacityRef.current;
+      const glowMul = glowRef.current;
+
+      if (styleRef.current === 'bars') {
+        drawBars(w, h, base, scale, hueBase, sizeMul, opacityMul, glowMul);
+      } else {
+        if (beatNow) ripples.push({ r: base * 0.17 * sizeMul, life: 1 });
+        drawRings(w, h, base, t, scale, hueBase, sizeMul, opacityMul, glowMul);
       }
 
       ctx.shadowBlur = 0;

@@ -8,6 +8,7 @@ import { useCallback, useState } from 'react';
 //   bgBlur             : blur applied to a user background image (px)
 //   tintColor          : color of the overlay tint
 //   tintStrength       : how strongly the tint is overlaid (0..1)
+//   waveStyle          : 'rings' (concentric rings) | 'bars' (mirrored spectrum bars)
 //   waveScale          : multiplier on wave radius
 //   waveOpacity        : multiplier on wave opacity
 //   waveGlow           : multiplier on wave glow (shadow blur)
@@ -31,6 +32,7 @@ export const DEFAULT_SETTINGS = {
   bgBlur: 0,
   tintColor: '#000000',
   tintStrength: 0,
+  waveStyle: 'rings',
   waveScale: 1,
   waveOpacity: 1,
   waveGlow: 1,

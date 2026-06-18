@@ -16,6 +16,11 @@ const px = (v) => `${Math.round(v)}px`;
 
 const TABS = ['Centerpiece', 'Waves', 'Background', 'Effects'];
 
+const WAVE_STYLES = [
+  { value: 'rings', label: 'Rings' },
+  { value: 'bars', label: 'Bars (spectrum)' },
+];
+
 // Free Google Fonts loaded in index.html (Montserrat ≈ Spotify's Circular).
 const LABEL_FONTS = ['Montserrat', 'Poppins', 'Nunito', 'Inter', 'Playfair Display', 'Pacifico', 'Bebas Neue'];
 
@@ -138,6 +143,20 @@ export default function ImageUploader({
 
       {tab === 'Waves' && (
         <div className="uploader__sliders">
+          <label className="uploader__color-row">
+            <span className="uploader__slider-label">Wave style</span>
+            <select
+              className="uploader__select"
+              value={settings.waveStyle}
+              onChange={(e) => setSetting('waveStyle', e.target.value)}
+            >
+              {WAVE_STYLES.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </label>
           <label className="uploader__check-row">
             <span className="uploader__slider-label">React to song audio</span>
             <input
